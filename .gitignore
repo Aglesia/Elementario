@@ -20,6 +20,9 @@ obj
 bin/Debug
 android/app/build
 android/app/.externalNativeBuild
+android/.gradle
+android/.idea
+android/build
 
 # Fortran module files
 *.mod
