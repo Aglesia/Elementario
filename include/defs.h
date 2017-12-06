@@ -28,13 +28,13 @@
 #define LOG_LEVEL SDL_LOG_PRIORITY_DEBUG
 
 // int_to_string
-#define SSTR( x ) (std::string)"OK"//static_cast<std::ostringstream &>((std::ostringstream() << std::dec << x )).str()
+#define SSTR( x ) (std::string)static_cast<std::ostringstream &>((std::ostringstream() << std::dec << x )).str()
 
 // Fenêtres
 #define TAILLE_FENETRE_X 1280
 #define TAILLE_FENETRE_Y 720
-#define IMG_INIT_FORMAT IMG_INIT_PNG
-#define IMAGE_FORMAT "tiff"
+#define IMG_INIT_FORMAT IMG_INIT_JPG
+#define IMAGE_FORMAT "tga"
 #define TRANSPARENCE_HEXAGONE_CHARGEMENT 10
 
 // Etat main
@@ -57,13 +57,13 @@
 #define NB_TICKS_DEPLACEMENT_ECRAN 15 // Nombre de ticks entre le début et la fin de la transition entre 2 écrans
 
 // Fichiers
-#define ICONE_FILENAME "data/icon.tiff"
-#define IMAGE_FOND_FILENAME "data/image/fond.tiff"
+#define ICONE_FILENAME "data/icon.tga"
+#define IMAGE_FOND_FILENAME "data/image/fond.tga"
 #define POLICE_CHARGEMENT_FILENAME "data/font/chargement.ttf"
 #define POLICE_MENU_FILENAME "data/font/chargement.ttf"
-#define BOUTON_SOURIS_FILENAME "data/image/button/config/mouse.tiff"
-#define BOUTON_CLAVIER_FILENAME "data/image/button/config/keyboard.tiff"
-#define BOUTON_MANETTE_FILENAME "data/image/button/config/controller.tiff"
+#define BOUTON_SOURIS_FILENAME "data/image/button/config/mouse.tga"
+#define BOUTON_CLAVIER_FILENAME "data/image/button/config/keyboard.tga"
+#define BOUTON_MANETTE_FILENAME "data/image/button/config/controller.tga"
 #define BOUTON_CONFIG_DIRNAME "data/image/button/config/"
 #define POLICE_CHARGEMENT_TAILLE 24
 #define POLICE_MENU_TAILLE 18

@@ -32,7 +32,6 @@ ifeq ($(SUPPORT_WEBP),true)
     include $(MY_LOCAL_PATH)/$(WEBP_LIBRARY_PATH)/Android.mk
 endif
 
-
 # Restore local path
 LOCAL_PATH := $(MY_LOCAL_PATH)
 

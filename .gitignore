@@ -39,3 +39,6 @@ android/build
 
 #Android
 Android_SDL2_sources
+android/app/app\.iml
+
+android/local\.properties
