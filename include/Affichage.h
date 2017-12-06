@@ -1,18 +1,9 @@
 #ifndef AFFICHAGE_H
 #define AFFICHAGE_H
 
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_ttf.h>
-#include <SDL2/SDL_image.h>
 #include <Bouton.h>
 #include <Manette.h>
 #include <Touche.h>
-#include <mutex>
-#include <vector>
-#include <stdio.h>
-#include <string>
-#include <sstream>
-#include <ctime>
 #include <defs.h>
 
 class Affichage

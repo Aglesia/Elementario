@@ -1,9 +1,6 @@
 #ifndef CONTROLLER_H
 #define CONTROLLER_H
 
-#include <mutex>
-#include <stdio.h>
-#include <vector>
 #include <Manette.h>
 #include <ToucheJeu.h>
 #include <defs.h>

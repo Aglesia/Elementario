@@ -90,7 +90,7 @@ void Touche::setValAxe(int valeurBrut, bool ignoreInversion)
 	if(this->inverserAxe && !ignoreInversion)
 		this->valeur *= -1;
 
-	SDL_Log("val %s : %d\n", this->nom.c_str(), this->valeur);
+	SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "val %s : %d\n", this->nom.c_str(), this->valeur);
 	this->lock.unlock();
 }
 
@@ -99,7 +99,7 @@ void Touche::setPressed(bool pressed)
 {
 	this->lock.lock();
 	this->valeur = (pressed)?this->valClic:this->valUnclic;
-	SDL_Log("val %s : %d\n", this->nom.c_str(), this->valeur);
+	SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "val %s : %d\n", this->nom.c_str(), this->valeur);
 	this->lock.unlock();
 }
 

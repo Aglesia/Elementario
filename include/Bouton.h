@@ -1,11 +1,6 @@
 #ifndef BOUTON_H
 #define BOUTON_H
 
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_ttf.h>
-#include <SDL2/SDL_image.h>
-#include <vector>
-#include <string>
 #include <defs.h>
 
 class Bouton // TODO : Surcharger le copy-constructeur et jouer un son à la sélection
