@@ -1,10 +1,6 @@
 #ifndef TOUCHE_H
 #define TOUCHE_H
 
-#include <mutex>
-#include <string>
-#include <vector>
-#include <stdio.h>
 #include <defs.h>
 
 class Touche

@@ -2,6 +2,7 @@
 #define TOUCHE_JEU_H
 
 #include <Touche.h>
+#include <defs.h>
 
 class ToucheJeu
 {

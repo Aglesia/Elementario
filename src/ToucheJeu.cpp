@@ -26,7 +26,7 @@ void ToucheJeu::nouvelEvenement(Touche* touche)
 					this->valeurAxe = touche->getValAxe();
 					this->valeurBool = touche->isPressed();
 					i=this->touches.size();
-					SDL_Log("Touche jeu %s : %d(%d)\n", this->nom.c_str(), this->valeurAxe, this->valeurBool);
+					SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Touche jeu %s : %d(%d)\n", this->nom.c_str(), this->valeurAxe, this->valeurBool);
 				}
 			}
 	}
@@ -57,7 +57,7 @@ void ToucheJeu::addTouche(Touche* touche)
 	if(!touchePresente(touche))
 	{
 		this->mutex.lock();
-		SDL_Log("Touche %s ajouté à %s\n", touche->nom.c_str(), this->nom.c_str());
+		SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Touche %s ajouté à %s\n", touche->nom.c_str(), this->nom.c_str());
 		this->touches.push_back(touche);
 		this->mutex.unlock();
 	}
@@ -69,7 +69,7 @@ void ToucheJeu::removeTouche(Touche* touche)
 	for(int i=0; i<this->touches.size(); i++)
 		if(this->touches[i] == touche)
 		{
-			SDL_Log("Touche %s retirée de %s\n", touche->nom.c_str(), this->nom.c_str());
+			SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Touche %s retirée de %s\n", touche->nom.c_str(), this->nom.c_str());
 			this->touches.erase(this->touches.begin() + i);
 		}
 	this->mutex.unlock();
@@ -91,6 +91,6 @@ void ToucheJeu::setVal(int axe, bool boolean)
 	this->mutex.lock();
 	this->valeurAxe = axe;
 	this->valeurBool = boolean;
-	SDL_Log("Valeur touche \"%s\" modifiée : %d(%d)\n", this->nom.c_str(), axe, boolean);
+	SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Valeur touche \"%s\" modifiée : %d(%d)\n", this->nom.c_str(), axe, boolean);
 	this->mutex.unlock();
 }

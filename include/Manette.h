@@ -1,8 +1,7 @@
 #ifndef MANETTE_H
 #define MANETTE_H
 
-#include <SDL2/SDL.h>
-#include <string>
+#include <defs.h>
 
 class Manette // TODO : Surcharger le copy-constructeur
 {

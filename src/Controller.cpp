@@ -92,7 +92,7 @@ void Controller::update()
 		{
 			// Nouvelle manette connectée
 			case SDL_JOYDEVICEADDED:
-				SDL_Log("Connexion d'un joystick : %d\n", event.jdevice.which);
+				SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Connexion d'un joystick : %d\n", event.jdevice.which);
 
 				{
 					SDL_Joystick* j = SDL_JoystickOpen(event.jdevice.which);
@@ -105,7 +105,7 @@ void Controller::update()
 						m->nbJoystick = SDL_JoystickNumAxes(j);
 						m->nbDirection = SDL_JoystickNumHats(j);
 						m->name = SDL_JoystickName(j);
-						SDL_Log("Nouvelle manette détectée : %s\n\tNombre d'axes : %d\n\tNombre de boutons : %d\n\tNombre de chapeaux : %d\n",
+						SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Nouvelle manette détectée : %s\n\tNombre d'axes : %d\n\tNombre de boutons : %d\n\tNombre de chapeaux : %d\n",
 							   SDL_JoystickName(j), SDL_JoystickNumAxes(j), SDL_JoystickNumButtons(j), SDL_JoystickNumHats(j));
 
 						// On crée chaque bouton
@@ -115,7 +115,7 @@ void Controller::update()
 							this->touchesInput.push_back(t);
 							t->nom = "Bouton "+SSTR(i);
 							t->configure = true;
-							SDL_Log("Nouveau bouton : %s\n", t->nom.c_str());
+							SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Nouveau bouton : %s\n", t->nom.c_str());
 						}
 						for(int i=1; i<=m->nbJoystick; i++)
 						{
@@ -123,7 +123,7 @@ void Controller::update()
 							this->touchesInput.push_back(t);
 							t->nom = "Axe "+SSTR(i);
 							t->configure = true;
-							SDL_Log("Nouvel axe : %s\n", t->nom.c_str());
+							SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Nouvel axe : %s\n", t->nom.c_str());
 						}
 						for(int i=1; i<=m->nbDirection*2; i+=2)
 						{
@@ -132,14 +132,14 @@ void Controller::update()
 							t->nom = "Croix direction "+SSTR(i);
 							t->setValeurs(-100, 100);
 							t->configure = true;
-							SDL_Log("Nouvel axe directionnel : %s\n", t->nom.c_str());
+							SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Nouvel axe directionnel : %s\n", t->nom.c_str());
 
 							t = new Touche(m->id, i+1, TYPE_TOUCHE_DIRECTION);
 							this->touchesInput.push_back(t);
 							t->nom = "Croix direction "+SSTR(i+1);
 							t->setValeurs(-100, 100);
 							t->configure = true;
-							SDL_Log("Nouvel axe directionnel : %s\n", t->nom.c_str());
+							SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Nouvel axe directionnel : %s\n", t->nom.c_str());
 						}
 
 						this->lock.unlock();
@@ -152,14 +152,14 @@ void Controller::update()
 
 			// Manette déconnectée
 			case SDL_JOYDEVICEREMOVED:
-				SDL_Log("Déconnexion d'un joystick : %d\n", event.jdevice.which);
+				SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Déconnexion d'un joystick : %d\n", event.jdevice.which);
 
 				{
 					//SDL_JoystickClose((SDL_Joystick*)event.jdevice.which);
 					for(unsigned int i=0; i<this->manettes.size(); i++)
 						if(this->manettes.at(i)->id == event.jdevice.which){
 							SDL_JoystickClose(this->manettes.at(i)->joy);
-							SDL_Log("Adresse : %d\n", this->manettes.at(i)->joy);
+							SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Adresse : %d\n", this->manettes.at(i)->joy);
 							this->manettes.erase(this->manettes.begin() + i);
 						}
 				}
@@ -426,7 +426,7 @@ void Controller::update()
 
 			// Trackball d'une manette a bougée
 			case SDL_JOYBALLMOTION:
-				SDL_Log("Trackball\n");
+				SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Trackball\n");
 				break;
 
 			// Chapeau d'une manette a bougé
@@ -510,55 +510,55 @@ void Controller::update()
 				switch (event.window.event)
 				{
 					case SDL_WINDOWEVENT_SHOWN:
-						SDL_Log("Window %d shown", event.window.windowID);
+						SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Window %d shown", event.window.windowID);
 						break;
 					case SDL_WINDOWEVENT_HIDDEN:
-						SDL_Log("Window %d hidden", event.window.windowID);
+						SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Window %d hidden", event.window.windowID);
 						break;
 					case SDL_WINDOWEVENT_EXPOSED:
-						SDL_Log("Window %d exposed", event.window.windowID);
+						SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Window %d exposed", event.window.windowID);
 						break;
 					case SDL_WINDOWEVENT_MOVED:
-						SDL_Log("Window %d moved to %d,%d",
+						SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Window %d moved to %d,%d",
 								event.window.windowID, event.window.data1,
 								event.window.data2);
 						break;
 					case SDL_WINDOWEVENT_RESIZED:
-						SDL_Log("Window %d resized to %dx%d",
+						SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Window %d resized to %dx%d",
 								event.window.windowID, event.window.data1,
 								event.window.data2);
 						break;
 					case SDL_WINDOWEVENT_SIZE_CHANGED:
-						SDL_Log("Window %d size changed to %dx%d",
+						SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Window %d size changed to %dx%d",
 								event.window.windowID, event.window.data1,
 								event.window.data2);
 						break;
 					case SDL_WINDOWEVENT_MINIMIZED:
-						SDL_Log("Window %d minimized", event.window.windowID);
+						SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Window %d minimized", event.window.windowID);
 						break;
 					case SDL_WINDOWEVENT_MAXIMIZED:
-						SDL_Log("Window %d maximized", event.window.windowID);
+						SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Window %d maximized", event.window.windowID);
 						break;
 					case SDL_WINDOWEVENT_RESTORED:
-						SDL_Log("Window %d restored", event.window.windowID);
+						SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Window %d restored", event.window.windowID);
 						break;
 					case SDL_WINDOWEVENT_ENTER:
-						SDL_Log("Mouse entered window %d",
+						SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Mouse entered window %d",
 								event.window.windowID);
 						break;
 					case SDL_WINDOWEVENT_LEAVE:
-						SDL_Log("Mouse left window %d", event.window.windowID);
+						SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Mouse left window %d", event.window.windowID);
 						break;
 					case SDL_WINDOWEVENT_FOCUS_GAINED:
-						SDL_Log("Window %d gained keyboard focus",
+						SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Window %d gained keyboard focus",
 								event.window.windowID);
 						break;
 					case SDL_WINDOWEVENT_FOCUS_LOST:
-						SDL_Log("Window %d lost keyboard focus",
+						SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Window %d lost keyboard focus",
 								event.window.windowID);
 						break;
 					case SDL_WINDOWEVENT_CLOSE:
-						SDL_Log("Window %d closed", event.window.windowID);
+						SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Window %d closed", event.window.windowID);
 						break;
 
 					default:

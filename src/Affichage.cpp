@@ -10,20 +10,20 @@ Affichage::Affichage(std::string name)
 									 TAILLE_FENETRE_Y,
 									 SDL_WINDOW_SHOWN|SDL_WINDOW_RESIZABLE);
 	if(this->pWindow)
-		SDL_Log("Ouverture de la fenêtre\n");
+		SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Ouverture de la fenêtre\n");
 	else
-		fprintf(stderr,"Erreur de création de la fenêtre : %s\n",SDL_GetError());
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Erreur de création de la fenêtre : %s\n",SDL_GetError());
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
 
 	// On crée le renderer
 	this->renderer = SDL_CreateRenderer(this->pWindow, -1, SDL_RENDERER_PRESENTVSYNC|SDL_RENDERER_ACCELERATED);
 	if(this->renderer)
 	{
-		SDL_Log("Création du renderer\n");
+		SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Création du renderer\n");
 		SDL_SetRenderDrawBlendMode(this->renderer, SDL_BLENDMODE_BLEND);
 	}
 	else
-		fprintf(stderr,"Erreur de création du renderer : %s\n",SDL_GetError());
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Erreur de création du renderer : %s\n",SDL_GetError());
 
 	// On initialise les ticks
 	this->dernierTempsTick = SDL_GetTicks();
@@ -67,7 +67,7 @@ void Affichage::modePleinEcran(bool pleinEcran, int* x, int* y)
 	if(this->pWindow)
 	{
 		if(SDL_SetWindowFullscreen(this->pWindow, (pleinEcran)?SDL_WINDOW_FULLSCREEN_DESKTOP:0))
-			fprintf(stderr, "Impossible de changer l'état de la fenêtre : %s\n", SDL_GetError());
+			SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,  "Impossible de changer l'état de la fenêtre : %s\n", SDL_GetError());
 		this->pleinEcran = pleinEcran;
 	}
 	// Si on a demandé la taille
@@ -85,7 +85,7 @@ void Affichage::update()
 
 	if(SDL_RenderClear(this->renderer))
 	{
-		printf("Impossible de mettre à jour l'écran : %s\n", SDL_GetError());
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Impossible de mettre à jour l'écran : %s\n", SDL_GetError());
 	}
 
 	// Si le fond est chargé, on l'affiche
@@ -393,7 +393,7 @@ int Affichage::init() // TODO : Ajouter tous les éléments à charger + image d
 	else
 	{
 		error = 1;
-		fprintf(stderr, "Impossible de charger l'image de fond : %s\n", IMG_GetError());
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,  "Impossible de charger l'image de fond : %s\n", IMG_GetError());
 	}
 
 	// On crée la barre de chargement
@@ -420,7 +420,7 @@ int Affichage::init() // TODO : Ajouter tous les éléments à charger + image d
 	else
 	{
 		error = 1;
-		fprintf(stderr, "Impossible de charger l'icône : %s\n", IMG_GetError());
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,  "Impossible de charger l'icône : %s\n", IMG_GetError());
 	}
 
 	// On charge les polices d'écriture
@@ -431,7 +431,7 @@ int Affichage::init() // TODO : Ajouter tous les éléments à charger + image d
 	if(this->policeChargement == nullptr)
 	{
 		error = 2;
-		fprintf(stderr, "Impossible de charger la police de chargement : %s\n", TTF_GetError());
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,  "Impossible de charger la police de chargement : %s\n", TTF_GetError());
 	}
 	this->afficherEcranChargement(75, "Chargement de la police d'écriture 02/02");
 	this->lock.lock();
@@ -441,7 +441,7 @@ int Affichage::init() // TODO : Ajouter tous les éléments à charger + image d
 	if(this->policeMenu == nullptr)
 	{
 		error = 2;
-		fprintf(stderr, "Impossible de charger la police de chargement : %s\n", TTF_GetError());
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,  "Impossible de charger la police de chargement : %s\n", TTF_GetError());
 	}
 
 	// On charge les icônes de configuration des touches
@@ -456,7 +456,8 @@ int Affichage::init() // TODO : Ajouter tous les éléments à charger + image d
 		std::string temp2 = BOUTON_CONFIG_DIRNAME;
 		temp2 += "categorie/";
 		temp2 += SSTR(i);
-		temp2 += ".png";
+		temp2 += ".";
+		temp2 += IMAGE_FORMAT;
 		fondC = IMG_Load(temp2.c_str());
 		if(fondC)
 		{
@@ -469,7 +470,7 @@ int Affichage::init() // TODO : Ajouter tous les éléments à charger + image d
 		else
 		{
 			error = 3;
-			fprintf(stderr, "Impossible de charger l'icône : %s\n", IMG_GetError());
+			SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,  "Impossible de charger l'image : %s\n", IMG_GetError());
 		}
 	}
 	// On charge les icônes de configuration des touches
@@ -484,7 +485,8 @@ int Affichage::init() // TODO : Ajouter tous les éléments à charger + image d
 		std::string temp2 = BOUTON_CONFIG_DIRNAME;
 		temp2 += "touche/";
 		temp2 += SSTR(i);
-		temp2 += ".png";
+		temp2 += ".";
+		temp2 += IMAGE_FORMAT;
 		fondC = IMG_Load(temp2.c_str());
 		if(fondC)
 		{
@@ -497,7 +499,7 @@ int Affichage::init() // TODO : Ajouter tous les éléments à charger + image d
 		else
 		{
 			error = 3;
-			fprintf(stderr, "Impossible de charger l'icône : %s\n", IMG_GetError());
+			SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,  "Impossible de charger l'image : %s\n", IMG_GetError());
 		}
 	}
 
@@ -506,7 +508,8 @@ int Affichage::init() // TODO : Ajouter tous les éléments à charger + image d
 		std::string temp = "Chargement de l'icône config_touche_3 (1/2)";
 		this->afficherEcranChargement(60, temp.c_str());
 		std::string temp2 = BOUTON_CONFIG_DIRNAME;
-		temp2 += "souris.png";
+		temp2 += "souris.";
+		temp2 += IMAGE_FORMAT;
 		fondC = IMG_Load(temp2.c_str());
 		if(fondC)
 		{
@@ -519,7 +522,7 @@ int Affichage::init() // TODO : Ajouter tous les éléments à charger + image d
 		else
 		{
 			error = 3;
-			fprintf(stderr, "Impossible de charger l'icône : %s\n", IMG_GetError());
+			SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,  "Impossible de charger l'image : %s\n", IMG_GetError());
 		}
 	}
 
@@ -528,7 +531,8 @@ int Affichage::init() // TODO : Ajouter tous les éléments à charger + image d
 		std::string temp = "Chargement de l'icône config_touche_3 (2/2)";
 		this->afficherEcranChargement(60, temp.c_str());
 		std::string temp2 = BOUTON_CONFIG_DIRNAME;
-		temp2 += "clavier.png";
+		temp2 += "clavier.";
+		temp2 += IMAGE_FORMAT;
 		fondC = IMG_Load(temp2.c_str());
 		if(fondC)
 		{
@@ -541,14 +545,15 @@ int Affichage::init() // TODO : Ajouter tous les éléments à charger + image d
 		else
 		{
 			error = 3;
-			fprintf(stderr, "Impossible de charger l'icône : %s\n", IMG_GetError());
+			SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,  "Impossible de charger l'image : %s\n", IMG_GetError());
 		}
 	}
 
 	// icône bouton
 	{
 		std::string temp2 = BOUTON_CONFIG_DIRNAME;
-		temp2 += "bouton.png";
+		temp2 += "bouton.";
+		temp2 += IMAGE_FORMAT;
 		SDL_Surface* fondC = IMG_Load(temp2.c_str());
 		if(fondC)
 		{
@@ -558,14 +563,15 @@ int Affichage::init() // TODO : Ajouter tous les éléments à charger + image d
 		else
 		{
 			error = 3;
-			fprintf(stderr, "Impossible de charger l'icône : %s\n", IMG_GetError());
+			SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,  "Impossible de charger l'image : %s\n", IMG_GetError());
 		}
 	}
 
 	// icône axe
 	{
 		std::string temp2 = BOUTON_CONFIG_DIRNAME;
-		temp2 += "axe.png";
+		temp2 += "axe.";
+		temp2 += IMAGE_FORMAT;
 		SDL_Surface* fondC = IMG_Load(temp2.c_str());
 		if(fondC)
 		{
@@ -575,14 +581,15 @@ int Affichage::init() // TODO : Ajouter tous les éléments à charger + image d
 		else
 		{
 			error = 3;
-			fprintf(stderr, "Impossible de charger l'icône : %s\n", IMG_GetError());
+			SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,  "Impossible de charger l'image : %s\n", IMG_GetError());
 		}
 	}
 
 	// icône croix
 	{
 		std::string temp2 = BOUTON_CONFIG_DIRNAME;
-		temp2 += "croix.png";
+		temp2 += "croix.";
+		temp2 += IMAGE_FORMAT;
 		SDL_Surface* fondC = IMG_Load(temp2.c_str());
 		if(fondC)
 		{
@@ -592,14 +599,15 @@ int Affichage::init() // TODO : Ajouter tous les éléments à charger + image d
 		else
 		{
 			error = 3;
-			fprintf(stderr, "Impossible de charger l'icône : %s\n", IMG_GetError());
+			SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,  "Impossible de charger l'image : %s\n", IMG_GetError());
 		}
 	}
 
 	// icône molette
 	{
 		std::string temp2 = BOUTON_CONFIG_DIRNAME;
-		temp2 += "molette.png";
+		temp2 += "molette.";
+		temp2 += IMAGE_FORMAT;
 		SDL_Surface* fondC = IMG_Load(temp2.c_str());
 		if(fondC)
 		{
@@ -609,14 +617,15 @@ int Affichage::init() // TODO : Ajouter tous les éléments à charger + image d
 		else
 		{
 			error = 3;
-			fprintf(stderr, "Impossible de charger l'icône : %s\n", IMG_GetError());
+			SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,  "Impossible de charger l'image : %s\n", IMG_GetError());
 		}
 	}
 
 	// icône new
 	{
 		std::string temp2 = BOUTON_CONFIG_DIRNAME;
-		temp2 += "new.png";
+		temp2 += "new.";
+		temp2 += IMAGE_FORMAT;
 		SDL_Surface* fondC = IMG_Load(temp2.c_str());
 		if(fondC)
 		{
@@ -626,7 +635,7 @@ int Affichage::init() // TODO : Ajouter tous les éléments à charger + image d
 		else
 		{
 			error = 3;
-			fprintf(stderr, "Impossible de charger l'icône : %s\n", IMG_GetError());
+			SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,  "Impossible de charger l'image : %s\n", IMG_GetError());
 		}
 	}
 
@@ -925,7 +934,8 @@ void Affichage::afficherMenuConfigTouches3(int nbController, int noController, i
 		for(int i=configTouches3Boutons.size(); i<nbController+2; i++)
 		{
 			std::string temp2 = BOUTON_CONFIG_DIRNAME;
-			temp2 += "manette.png";
+			temp2 += "manette.";
+			temp2 += IMAGE_FORMAT;
 			SDL_Surface* fondC = IMG_Load(temp2.c_str());
 			if(fondC)
 			{
@@ -933,7 +943,7 @@ void Affichage::afficherMenuConfigTouches3(int nbController, int noController, i
 				SDL_FreeSurface(fondC);
 			}
 			else
-				fprintf(stderr, "Impossible de charger l'icône : %s\n", IMG_GetError());
+				SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,  "Impossible de charger l'icône : %s\n", IMG_GetError());
 		}
 		this->lock.unlock();
 	}
@@ -1218,7 +1228,7 @@ void Affichage::afficherInfoConfigurationTouches2(Touche* t)
 		SDL_Surface* titreSurface = TTF_RenderUTF8_Solid(this->policeTitreMenu, configTouchesNom.c_str(), couleurTexte);
 		if(titreSurface == nullptr)
 		{
-			SDL_Log("Impossible de créer le texte : %s\n", TTF_GetError());
+			SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Impossible de créer le texte : %s\n", TTF_GetError());
 			return;
 		}
 

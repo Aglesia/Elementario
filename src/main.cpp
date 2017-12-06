@@ -1,9 +1,8 @@
-#include <stdio.h>
-#include <thread>
 #include <Affichage.h>
 #include <Controller.h>
 #include <ToucheJeu.h>
 #include <Touche.h>
+#include <defs.h>
 
 typedef struct VarGame
 {
@@ -17,14 +16,14 @@ typedef struct VarGame
 
 typedef struct DataThread
 {
-	Affichage* aff = nullptr;
-	Controller* c = nullptr;
+	Affichage* aff = nullptr; // Objet affichage
+	Controller* c = nullptr; // Objet controller
 	bool isStop = false; // Le thread a fini
 	bool mustStop = false; // Le thread doit être arreté
-	int ret = 0;
+	int ret = 0; // Retour de l'étape
 	void* data = nullptr; // Donnée supplémentaire
 	VarGame* var = nullptr; // Données du jeu (variables "globales")
-	std::mutex mutex;
+	std::mutex mutex; // Mutex
 } DataThread;
 
 /**
@@ -93,7 +92,7 @@ static int threadInit(void* data) // TODO : Toutes les touches de base
 
 	// On initialise les graphismes
 	t->ret = t->aff->init();
-	SDL_Log("Jeu chargé\n");
+	SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "Jeu chargé\n");
 
 	t->mutex.lock();
 	t->isStop = true;
@@ -566,7 +565,7 @@ static int threadConfigTouches5(void* data) // TODO : Afficher les propriétés 
 			do{
 				Touche touche(m->id, 0, 0);
 				t->c->listen(&touche);
-				SDL_Log("Attente d'appuie...");
+				SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Attente d'appuie...");
 				while(touche.getType() == TYPE_TOUCHE_INCONNU && !quitter)
 				{
 					t->mutex.lock();
@@ -574,7 +573,7 @@ static int threadConfigTouches5(void* data) // TODO : Afficher les propriétés 
 					t->mutex.unlock();
 					SDL_Delay(1);
 				}
-				SDL_Log("Touche appuyée : %d de type %d. Appuyé : %d\n", touche.getNoTouche(), touche.getType(), touche.isPressed());
+				SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Touche appuyée : %d de type %d. Appuyé : %d\n", touche.getNoTouche(), touche.getType(), touche.isPressed());
 				noT = touche.getNoTouche();
 				typeT = touche.getType();
 				continuer = !touche.isPressed();
@@ -671,19 +670,20 @@ int main(int argc, char** argv)
 		fprintf(stdout,"Échec de l'initialisation de la SDL (%s)\n", SDL_GetError());
 		return -1;
 	}
-	SDL_Log("SDL init done\n");
+	SDL_LogSetAllPriority(LOG_LEVEL);
+	SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "SDL chargé");
 	if(TTF_Init() != 0)
 	{
-		fprintf(stdout,"Échec de l'initialisation de TTF (%s)\n", TTF_GetError());
+		SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Échec de l'initialisation de TTF (%s)\n", TTF_GetError());
 		return -1;
 	}
-	SDL_Log("SDL_ttf init done\n");
+	SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "SDL_ttf chargé");
 	if((IMG_Init(IMG_INIT_FORMAT) & IMG_INIT_FORMAT) != IMG_INIT_FORMAT)
 	{
-		fprintf(stdout,"Échec de l'initialisation de la SDL_Image (%s)\n", IMG_GetError());
+		SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Échec de l'initialisation de la SDL_Image (%s)\n", IMG_GetError());
 		return -1;
 	}
-	SDL_Log("SDL_image init done\n");
+	SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "SDL_Image chargé");
 
 	// Variables du jeu
 	VarGame var;
@@ -703,6 +703,8 @@ int main(int argc, char** argv)
 	// Boucle principale
 	int etat = ETAT_CHARGEMENT_JEU;
 	bool pe = false; // Plein écran
+	int etatER = ETAT_ERREUR;
+	int retER = 0;
 	while(etat != ETAT_ERREUR && etat != ETAT_QUITTER)
 	{
 		// On crée le thread
@@ -763,6 +765,10 @@ int main(int argc, char** argv)
 					t.mustStop = true;
 					t.mutex.unlock();
 					etat = ETAT_QUITTER;
+
+					// Gestion d'erreur
+					etatER = ETAT_QUITTER;
+					retER = 0;
 				}
 
 				// On regarde si on doit mettre/enlever le plein écran
@@ -784,6 +790,10 @@ int main(int argc, char** argv)
 
 			// Selon l'état, on traite le retour
 			if(etat != ETAT_QUITTER)
+			{
+				// En cas d'erreur
+				etatER = etat;
+				retER = t.ret;
 				switch(etat)
 				{
 					case ETAT_CHARGEMENT_JEU:
@@ -828,18 +838,23 @@ int main(int argc, char** argv)
 						etat = ETAT_QUITTER;
 						break;
 				}
+			}
 		}
 		else
+		{
+			etatER = etat;
+			retER = 0;
 			etat = ETAT_ERREUR;
+		}
 	}
 
 	delete aff;
 	delete c;
 
 	if(etat == ETAT_QUITTER)
-		SDL_Log("Jeu terminé correctement\n");
+		SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "Jeu terminé correctement\n");
 	else
-		SDL_Log("Jeu terminé avec une erreur\n");
+		SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Jeu terminé avec une erreur,\nEtat:%d, retour:%d\n", etatER, retER);
 
 	IMG_Quit();
 	TTF_Quit();
