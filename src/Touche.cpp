@@ -1,4 +1,5 @@
 #include <Touche.h>
+#include "../include/Touche.h"
 
 Touche::Touche(int noManette, int noTouche, int typeTouche)
 {

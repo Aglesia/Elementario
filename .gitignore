@@ -17,8 +17,9 @@ obj
 # Compiled Dynamic libraries
 *.so
 *.dylib
-*.dll
-bin
+bin/Debug
+android/app/build
+android/app/.externalNativeBuild
 
 # Fortran module files
 *.mod
@@ -27,10 +28,11 @@ bin
 # Compiled Static libraries
 *.lai
 *.la
-*.a
-*.lib
 
 # Executables
 *.exe
 *.out
 *.app
+
+#Android
+Android_SDL2_sources

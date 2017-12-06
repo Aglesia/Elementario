@@ -19,12 +19,12 @@
 #endif
 
 // int_to_string
-#define SSTR( x ) static_cast<std::ostringstream &>((std::ostringstream() << std::dec << x )).str()
+#define SSTR( x ) (std::string)"OK"//static_cast<std::ostringstream &>((std::ostringstream() << std::dec << x )).str()
 
 // Fenêtres
 #define TAILLE_FENETRE_X 800
 #define TAILLE_FENETRE_Y 600
-#define IMG_INIT_FORMAT IMG_INIT_PNG
+#define IMG_INIT_FORMAT IMG_INIT_JPG
 #define TRANSPARENCE_HEXAGONE_CHARGEMENT 10
 
 // Etat main

@@ -13,7 +13,7 @@ typedef struct VarGame
 	int configTouchesController = -2; // Controller actuel dans l'écran de configuration des touches
 	int configTouchesBoutonController = 0; // Bouton du controller actuel dans l'écran de configuration des touches
 	Touche* configTouchesToucheController = nullptr; // Bouton du controller actuel dans l'écran de configuration des touches
-};
+} VarGame;
 
 typedef struct DataThread
 {
@@ -25,7 +25,7 @@ typedef struct DataThread
 	void* data = nullptr; // Donnée supplémentaire
 	VarGame* var = nullptr; // Données du jeu (variables "globales")
 	std::mutex mutex;
-};
+} DataThread;
 
 /**
  * Fonctions de thread
@@ -603,6 +603,66 @@ static int threadConfigTouches5(void* data) // TODO : Afficher les propriétés 
 	return t->ret;
 }
 
+int main_(int argc, char* argv[]) {
+
+    SDL_Window *window;                    // Declare a pointer
+
+    SDL_Init(SDL_INIT_VIDEO);              // Initialize SDL2
+
+    // Create an application window with the following settings:
+    window = SDL_CreateWindow(
+        "An SDL2 window",                  // window title
+        SDL_WINDOWPOS_UNDEFINED,           // initial x position
+        SDL_WINDOWPOS_UNDEFINED,           // initial y position
+        640,                               // width, in pixels
+        480,                               // height, in pixels
+        SDL_WINDOW_OPENGL                  // flags - see below
+    );
+
+    // Check that the window was successfully created
+    if (window == NULL) {
+        // In the case that the window could not be made...
+        printf("Could not create window: %s\n", SDL_GetError());
+        return 1;
+    }
+
+    // The window is open: could enter program loop here (see SDL_PollEvent())
+    // Setup renderer
+    SDL_Renderer* renderer = NULL;
+    renderer =  SDL_CreateRenderer( window, -1, SDL_RENDERER_ACCELERATED);
+
+    // Set render color to red ( background will be rendered in this color )
+    SDL_SetRenderDrawColor( renderer, 255, 0, 0, 255 );
+
+    // Clear winow
+    SDL_RenderClear( renderer );
+
+    // Creat a rect at pos ( 50, 50 ) that's 50 pixels wide and 50 pixels high.
+    SDL_Rect r;
+    r.x = 50;
+    r.y = 50;
+    r.w = 50;
+    r.h = 50;
+
+    // Set render color to blue ( rect will be rendered in this color )
+    SDL_SetRenderDrawColor( renderer, 0, 0, 255, 255 );
+
+    // Render rect
+    SDL_RenderFillRect( renderer, &r );
+
+    // Render the rect to the screen
+    SDL_RenderPresent(renderer);
+
+    SDL_Delay(8000);  // Pause execution for 3000 milliseconds, for example
+
+    // Close and destroy the window
+    SDL_DestroyWindow(window);
+
+    // Clean up
+    SDL_Quit();
+    return 0;
+}
+
 int main(int argc, char** argv)
 {
 	/* Initialisation simple */
@@ -611,16 +671,19 @@ int main(int argc, char** argv)
 		fprintf(stdout,"Échec de l'initialisation de la SDL (%s)\n", SDL_GetError());
 		return -1;
 	}
+	SDL_Log("SDL init done\n");
 	if(TTF_Init() != 0)
 	{
 		fprintf(stdout,"Échec de l'initialisation de TTF (%s)\n", TTF_GetError());
 		return -1;
 	}
+	SDL_Log("SDL_ttf init done\n");
 	if((IMG_Init(IMG_INIT_FORMAT) & IMG_INIT_FORMAT) != IMG_INIT_FORMAT)
 	{
 		fprintf(stdout,"Échec de l'initialisation de la SDL_Image (%s)\n", IMG_GetError());
 		return -1;
 	}
+	SDL_Log("SDL_image init done\n");
 
 	// Variables du jeu
 	VarGame var;
