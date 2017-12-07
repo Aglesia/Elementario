@@ -9,7 +9,7 @@
 class Affichage
 {
 	public:
-		Affichage(std::string name);
+		Affichage(std::string name, std::string path);
 		virtual ~Affichage();
 		void modePleinEcran(bool pleinEcran = true, int* x = nullptr, int* y = nullptr);
 		void update();
@@ -30,10 +30,12 @@ class Affichage
 		void afficherMenuConfigTouches4(std::vector<Touche*>* t = nullptr, int noTouche = -1, int xReference = -1, int opacite = 255);
 		void afficherInfoConfigurationTouches1(std::string nom = "", std::string string = "");
 		void afficherInfoConfigurationTouches2(Touche* t = nullptr);
+		static std::string intToString(int i);
 
 	protected:
 
 	private:
+		std::string path; // Chemin d'accès aux fichiers
 		SDL_Window* pWindow = nullptr; // Fenêtre principale
 		SDL_Renderer* renderer = nullptr; // Rendu de la fenêtre principale
 

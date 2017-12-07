@@ -1,5 +1,8 @@
 package org.libsdl.app;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
@@ -105,6 +108,65 @@ public class SDLActivity extends Activity {
         };
     }
 
+    // Extrait les fichiers ressources dans le dossier data
+    private void copyFiletoExternalStorage(int resourceId, String dirName, String filename){
+        String pathSDCard = getApplicationContext().getFilesDir().getAbsolutePath() + "/" + dirName; // TODO : External SD
+        try{
+            File f = new File(pathSDCard);
+            f.mkdirs();
+            pathSDCard += "/"+filename;
+            f = new File(pathSDCard);
+            if(f.exists())
+                return;
+            InputStream in = getResources().openRawResource(resourceId);
+            FileOutputStream out = new FileOutputStream(pathSDCard);
+            byte[] buff = new byte[1024];
+            int read = 0;
+            try {
+                while ((read = in.read(buff)) > 0) {
+                    out.write(buff, 0, read);
+                }
+            } finally {
+                in.close();
+                out.close();
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        Log.d("Extraction ressource", pathSDCard+" extrait");
+    }
+
+    // Load resources into sdCard
+    private void copyRes(){
+        copyFiletoExternalStorage(R.raw.icon, "data/image", "icon.tga");
+        copyFiletoExternalStorage(R.raw.fond, "data/image", "fond.tga");
+        copyFiletoExternalStorage(R.raw.chargement, "data/font", "chargement.ttf");
+        copyFiletoExternalStorage(R.raw.conf_axe, "data/image/button/config", "axe.tga");
+        copyFiletoExternalStorage(R.raw.conf_bouton, "data/image/button/config", "bouton.tga");
+        copyFiletoExternalStorage(R.raw.conf_clavier, "data/image/button/config", "clavier.tga");
+        copyFiletoExternalStorage(R.raw.conf_croix, "data/image/button/config", "croix.tga");
+        copyFiletoExternalStorage(R.raw.conf_manette, "data/image/button/config", "manette.tga");
+        copyFiletoExternalStorage(R.raw.conf_molette, "data/image/button/config", "molette.tga");
+        copyFiletoExternalStorage(R.raw.conf_new, "data/image/button/config", "new.tga");
+        copyFiletoExternalStorage(R.raw.conf_souris, "data/image/button/config", "souris.tga");
+        copyFiletoExternalStorage(R.raw.conf_t_1, "data/image/button/config/touche", "1.tga");
+        copyFiletoExternalStorage(R.raw.conf_t_2, "data/image/button/config/touche", "2.tga");
+        copyFiletoExternalStorage(R.raw.conf_t_3, "data/image/button/config/touche", "3.tga");
+        copyFiletoExternalStorage(R.raw.conf_t_4, "data/image/button/config/touche", "4.tga");
+        copyFiletoExternalStorage(R.raw.conf_t_5, "data/image/button/config/touche", "5.tga");
+        copyFiletoExternalStorage(R.raw.conf_t_6, "data/image/button/config/touche", "6.tga");
+        copyFiletoExternalStorage(R.raw.conf_t_7, "data/image/button/config/touche", "7.tga");
+        copyFiletoExternalStorage(R.raw.conf_t_8, "data/image/button/config/touche", "8.tga");
+        copyFiletoExternalStorage(R.raw.conf_t_9, "data/image/button/config/touche", "9.tga");
+        copyFiletoExternalStorage(R.raw.conf_t_0, "data/image/button/config/touche", "0.tga");
+        copyFiletoExternalStorage(R.raw.conf_c_0, "data/image/button/config/categorie", "0.tga");
+        copyFiletoExternalStorage(R.raw.conf_c_1, "data/image/button/config/categorie", "1.tga");
+        copyFiletoExternalStorage(R.raw.conf_c_2, "data/image/button/config/categorie", "2.tga");
+        copyFiletoExternalStorage(R.raw.conf_c_3, "data/image/button/config/categorie", "3.tga");
+    }
+
     // Load the .so
     public void loadLibraries() {
        for (String lib : getLibraries()) {
@@ -119,7 +181,9 @@ public class SDLActivity extends Activity {
      * @return arguments for the native application.
      */
     protected String[] getArguments() {
-        return new String[0];
+        String[] ret = new String[1];
+        ret[0] = getApplicationContext().getFilesDir().getAbsolutePath();
+        return ret;
     }
 
     public static void initialize() {
@@ -184,6 +248,9 @@ public class SDLActivity extends Activity {
            return;
         }
 
+        // Copy ressources
+        copyRes();
+
         // Set up JNI
         SDL.setupJNI();
 
@@ -194,12 +261,7 @@ public class SDLActivity extends Activity {
         mSingleton = this;
         SDL.setContext(this);
 
-        if (Build.VERSION.SDK_INT >= 11) {
-            mClipboardHandler = new SDLClipboardHandler_API11();
-        } else {
-            /* Before API 11, no clipboard notification (eg no SDL_CLIPBOARDUPDATE) */
-            mClipboardHandler = new SDLClipboardHandler_Old();
-        }
+        mClipboardHandler = new SDLClipboardHandler_API11();
 
         // Set up the surface
         mSurface = new SDLSurface(getApplication());
@@ -355,7 +417,8 @@ public class SDLActivity extends Activity {
         // Try a transition to paused state
         if (mNextNativeState == NativeState.PAUSED) {
             nativePause();
-            mSurface.handlePause();
+            if(mSurface != null)
+                mSurface.handlePause();
             mCurrentNativeState = mNextNativeState;
             return;
         }

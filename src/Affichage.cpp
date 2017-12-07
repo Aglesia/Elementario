@@ -1,7 +1,9 @@
 #include "Affichage.h"
 
-Affichage::Affichage(std::string name)
+Affichage::Affichage(std::string name, std::string path)
 {
+	this->path = path;
+
 	// On crée la fenêtre
 	this->pWindow = SDL_CreateWindow(name.c_str(),
 									 SDL_WINDOWPOS_UNDEFINED,
@@ -382,11 +384,16 @@ int Affichage::init() // TODO : Ajouter tous les éléments à charger + image d
 	int error = 0;
 
 	// On crée un fond noir pour l'écran de chargement
-	SDL_Surface* fondC = IMG_Load(IMAGE_FOND_FILENAME);
+	std::string temp2 = this->path;
+	temp2 += IMAGE_FOND_FILENAME;
+	SDL_Surface* fondC = IMG_Load(temp2.c_str());
 	if(fondC)
 	{
 		this->lock.lock();
 		this->fond = SDL_CreateTextureFromSurface(this->renderer, fondC);
+		int x, y;
+		SDL_QueryTexture(this->fond, NULL, NULL, &x, &y);
+		SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Image chargée : taille = %d,%d", x, y);
 		this->lock.unlock();
 		SDL_FreeSurface(fondC);
 	}
@@ -408,12 +415,17 @@ int Affichage::init() // TODO : Ajouter tous les éléments à charger + image d
 	// On charge l'icône de l'appli (qui sera aussi le gif de chargement)
 	this->afficherEcranChargement(50, "Chargement de l'icône du jeu");
 	this->lock.lock();
-	this->icone = IMG_Load(ICONE_FILENAME);
+	temp2 = this->path;
+	temp2 += ICONE_FILENAME;
+	this->icone = IMG_Load(temp2.c_str());
 	this->lock.unlock();
 	if(this->icone)
 	{
 		this->lock.lock();
 		this->gifChargement = SDL_CreateTextureFromSurface(this->renderer, this->icone);
+		int x, y;
+		SDL_QueryTexture(this->gifChargement, NULL, NULL, &x, &y);
+		SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Icône chargée : taille = %d,%d", x, y);
 		this->lock.unlock();
 		SDL_SetWindowIcon(this->pWindow, this->icone);
 	}
@@ -426,7 +438,9 @@ int Affichage::init() // TODO : Ajouter tous les éléments à charger + image d
 	// On charge les polices d'écriture
 	this->afficherEcranChargement(75, "Chargement de la police d'écriture 01/02");
 	this->lock.lock();
-	this->policeChargement = TTF_OpenFont(POLICE_CHARGEMENT_FILENAME, POLICE_CHARGEMENT_TAILLE);
+	temp2 = this->path;
+	temp2 += POLICE_CHARGEMENT_FILENAME;
+	this->policeChargement = TTF_OpenFont(temp2.c_str(), POLICE_CHARGEMENT_TAILLE);
 	this->lock.unlock();
 	if(this->policeChargement == nullptr)
 	{
@@ -435,8 +449,10 @@ int Affichage::init() // TODO : Ajouter tous les éléments à charger + image d
 	}
 	this->afficherEcranChargement(75, "Chargement de la police d'écriture 02/02");
 	this->lock.lock();
-	this->policeMenu = TTF_OpenFont(POLICE_MENU_FILENAME, POLICE_MENU_TAILLE);
-	this->policeTitreMenu = TTF_OpenFont(POLICE_MENU_FILENAME, POLICE_MENU_TITRE_TAILLE);
+	temp2 = this->path;
+	temp2 += POLICE_MENU_FILENAME;
+	this->policeMenu = TTF_OpenFont(temp2.c_str(), POLICE_MENU_TAILLE);
+	this->policeTitreMenu = TTF_OpenFont(temp2.c_str(), POLICE_MENU_TITRE_TAILLE);
 	this->lock.unlock();
 	if(this->policeMenu == nullptr)
 	{
@@ -448,14 +464,15 @@ int Affichage::init() // TODO : Ajouter tous les éléments à charger + image d
 	for(int i=0; i<CONFIG_TOUCHES_NB_CATEGORIES; i++)
 	{
 		std::string temp = "Chargement de l'icône config_touches_1 (";
-		temp += SSTR(i);
+		temp += Affichage::intToString(i);
 		temp += "/";
-		temp += SSTR(CONFIG_TOUCHES_NB_CATEGORIES);
+		temp += Affichage::intToString(CONFIG_TOUCHES_NB_CATEGORIES);
 		temp += ")";
 		this->afficherEcranChargement(60, temp.c_str());
-		std::string temp2 = BOUTON_CONFIG_DIRNAME;
+		std::string temp2 = this->path;
+		temp2 += BOUTON_CONFIG_DIRNAME;
 		temp2 += "categorie/";
-		temp2 += SSTR(i);
+		temp2 += Affichage::intToString(i);
 		temp2 += ".";
 		temp2 += IMAGE_FORMAT;
 		fondC = IMG_Load(temp2.c_str());
@@ -477,14 +494,15 @@ int Affichage::init() // TODO : Ajouter tous les éléments à charger + image d
 	for(int i=0; i<CONFIG_TOUCHES_NB_TOUCHE_JEU; i++)
 	{
 		std::string temp = "Chargement de l'icône config_touches_2 (";
-		temp += SSTR(i);
+		temp += Affichage::intToString(i);
 		temp += "/";
-		temp += SSTR(CONFIG_TOUCHES_NB_TOUCHE_JEU);
+		temp += Affichage::intToString(CONFIG_TOUCHES_NB_TOUCHE_JEU);
 		temp += ")";
 		this->afficherEcranChargement(60, temp.c_str());
-		std::string temp2 = BOUTON_CONFIG_DIRNAME;
+		std::string temp2 = this->path;
+		temp2 += BOUTON_CONFIG_DIRNAME;
 		temp2 += "touche/";
-		temp2 += SSTR(i);
+		temp2 += Affichage::intToString(i);
 		temp2 += ".";
 		temp2 += IMAGE_FORMAT;
 		fondC = IMG_Load(temp2.c_str());
@@ -507,7 +525,8 @@ int Affichage::init() // TODO : Ajouter tous les éléments à charger + image d
 	{
 		std::string temp = "Chargement de l'icône config_touche_3 (1/2)";
 		this->afficherEcranChargement(60, temp.c_str());
-		std::string temp2 = BOUTON_CONFIG_DIRNAME;
+		std::string temp2 = this->path;
+		temp2 += BOUTON_CONFIG_DIRNAME;
 		temp2 += "souris.";
 		temp2 += IMAGE_FORMAT;
 		fondC = IMG_Load(temp2.c_str());
@@ -530,7 +549,8 @@ int Affichage::init() // TODO : Ajouter tous les éléments à charger + image d
 	{
 		std::string temp = "Chargement de l'icône config_touche_3 (2/2)";
 		this->afficherEcranChargement(60, temp.c_str());
-		std::string temp2 = BOUTON_CONFIG_DIRNAME;
+		std::string temp2 = this->path;
+		temp2 += BOUTON_CONFIG_DIRNAME;
 		temp2 += "clavier.";
 		temp2 += IMAGE_FORMAT;
 		fondC = IMG_Load(temp2.c_str());
@@ -551,7 +571,8 @@ int Affichage::init() // TODO : Ajouter tous les éléments à charger + image d
 
 	// icône bouton
 	{
-		std::string temp2 = BOUTON_CONFIG_DIRNAME;
+		std::string temp2 = this->path;
+		temp2 += BOUTON_CONFIG_DIRNAME;
 		temp2 += "bouton.";
 		temp2 += IMAGE_FORMAT;
 		SDL_Surface* fondC = IMG_Load(temp2.c_str());
@@ -569,7 +590,8 @@ int Affichage::init() // TODO : Ajouter tous les éléments à charger + image d
 
 	// icône axe
 	{
-		std::string temp2 = BOUTON_CONFIG_DIRNAME;
+		std::string temp2 = this->path;
+		temp2 += BOUTON_CONFIG_DIRNAME;
 		temp2 += "axe.";
 		temp2 += IMAGE_FORMAT;
 		SDL_Surface* fondC = IMG_Load(temp2.c_str());
@@ -587,7 +609,8 @@ int Affichage::init() // TODO : Ajouter tous les éléments à charger + image d
 
 	// icône croix
 	{
-		std::string temp2 = BOUTON_CONFIG_DIRNAME;
+		std::string temp2 = this->path;
+		temp2 += BOUTON_CONFIG_DIRNAME;
 		temp2 += "croix.";
 		temp2 += IMAGE_FORMAT;
 		SDL_Surface* fondC = IMG_Load(temp2.c_str());
@@ -605,7 +628,8 @@ int Affichage::init() // TODO : Ajouter tous les éléments à charger + image d
 
 	// icône molette
 	{
-		std::string temp2 = BOUTON_CONFIG_DIRNAME;
+		std::string temp2 = this->path;
+		temp2 += BOUTON_CONFIG_DIRNAME;
 		temp2 += "molette.";
 		temp2 += IMAGE_FORMAT;
 		SDL_Surface* fondC = IMG_Load(temp2.c_str());
@@ -623,7 +647,8 @@ int Affichage::init() // TODO : Ajouter tous les éléments à charger + image d
 
 	// icône new
 	{
-		std::string temp2 = BOUTON_CONFIG_DIRNAME;
+		std::string temp2 = this->path;
+		temp2 += BOUTON_CONFIG_DIRNAME;
 		temp2 += "new.";
 		temp2 += IMAGE_FORMAT;
 		SDL_Surface* fondC = IMG_Load(temp2.c_str());
@@ -1212,15 +1237,15 @@ void Affichage::afficherInfoConfigurationTouches2(Touche* t)
 			configTouchesDescription = "- Appuyé : ";
 			configTouchesDescription += (this->configTouchesManette->isPressed())?"Oui":"Non";
 			configTouchesDescription += "\n- Valeur brut de l'axe : ";
-			configTouchesDescription += SSTR(this->configTouchesManette->getValBrutAxe());
+			configTouchesDescription += Affichage::intToString(this->configTouchesManette->getValBrutAxe());
 			configTouchesDescription += "\n- Valeur minimum : ";
-			configTouchesDescription += SSTR(this->configTouchesManette->getValeurMin());
+			configTouchesDescription += Affichage::intToString(this->configTouchesManette->getValeurMin());
 			configTouchesDescription += "\n- Valeur maximum : ";
-			configTouchesDescription += SSTR(this->configTouchesManette->getValeurMax());
+			configTouchesDescription += Affichage::intToString(this->configTouchesManette->getValeurMax());
 			configTouchesDescription += "\n- Valeur lorsque cliqué : ";
-			configTouchesDescription += SSTR(this->configTouchesManette->getValeurClic());
+			configTouchesDescription += Affichage::intToString(this->configTouchesManette->getValeurClic());
 			configTouchesDescription += "\n- Valeur finale de l'axe : ";
-			configTouchesDescription += SSTR(this->configTouchesManette->getValAxe());
+			configTouchesDescription += Affichage::intToString(this->configTouchesManette->getValAxe());
 		}
 
 		// On dessine le titre
@@ -1302,4 +1327,10 @@ void Affichage::afficherInfoConfigurationTouches2(Touche* t)
 			SDL_DestroyTexture(texture);
 		}
 	}
+}
+
+std::string Affichage::intToString(int i) {
+	std::ostringstream oss;
+	oss << i;
+	return oss.str();
 }

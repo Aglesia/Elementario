@@ -27,9 +27,6 @@
 
 #define LOG_LEVEL SDL_LOG_PRIORITY_DEBUG
 
-// int_to_string
-#define SSTR( x ) (std::string)static_cast<std::ostringstream &>((std::ostringstream() << std::dec << x )).str()
-
 // Fenêtres
 #define TAILLE_FENETRE_X 1280
 #define TAILLE_FENETRE_Y 720
@@ -57,7 +54,7 @@
 #define NB_TICKS_DEPLACEMENT_ECRAN 15 // Nombre de ticks entre le début et la fin de la transition entre 2 écrans
 
 // Fichiers
-#define ICONE_FILENAME "data/icon.tga"
+#define ICONE_FILENAME "data/image/icon.tga"
 #define IMAGE_FOND_FILENAME "data/image/fond.tga"
 #define POLICE_CHARGEMENT_FILENAME "data/font/chargement.ttf"
 #define POLICE_MENU_FILENAME "data/font/chargement.ttf"

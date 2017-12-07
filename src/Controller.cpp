@@ -27,7 +27,7 @@ Controller::Controller(ToucheJeu** touchesJeu)
 		Touche* t = new Touche(-2, i, TYPE_TOUCHE_BOUTON);
 		this->touchesInput.push_back(t);
 		t->configure = true;
-		t->nom = "Bouton "+SSTR(i);
+		t->nom = "Bouton "+Controller::intToString(i);
 	}
 	Touche* t = new Touche(-2, 1, TYPE_TOUCHE_MOLETTE); // Molette x
 	this->touchesInput.push_back(t);
@@ -113,7 +113,7 @@ void Controller::update()
 						{
 							Touche* t = new Touche(m->id, i, TYPE_TOUCHE_BOUTON);
 							this->touchesInput.push_back(t);
-							t->nom = "Bouton "+SSTR(i);
+							t->nom = "Bouton "+Controller::intToString(i);
 							t->configure = true;
 							SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Nouveau bouton : %s\n", t->nom.c_str());
 						}
@@ -121,7 +121,7 @@ void Controller::update()
 						{
 							Touche* t = new Touche(m->id, i, TYPE_TOUCHE_JOYSTIC);
 							this->touchesInput.push_back(t);
-							t->nom = "Axe "+SSTR(i);
+							t->nom = "Axe "+Controller::intToString(i);
 							t->configure = true;
 							SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Nouvel axe : %s\n", t->nom.c_str());
 						}
@@ -129,14 +129,14 @@ void Controller::update()
 						{
 							Touche* t = new Touche(m->id, i, TYPE_TOUCHE_DIRECTION);
 							this->touchesInput.push_back(t);
-							t->nom = "Croix direction "+SSTR(i);
+							t->nom = "Croix direction "+Controller::intToString(i);
 							t->setValeurs(-100, 100);
 							t->configure = true;
 							SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Nouvel axe directionnel : %s\n", t->nom.c_str());
 
 							t = new Touche(m->id, i+1, TYPE_TOUCHE_DIRECTION);
 							this->touchesInput.push_back(t);
-							t->nom = "Croix direction "+SSTR(i+1);
+							t->nom = "Croix direction "+Controller::intToString(i+1);
 							t->setValeurs(-100, 100);
 							t->configure = true;
 							SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Nouvel axe directionnel : %s\n", t->nom.c_str());
@@ -678,4 +678,10 @@ void Controller::tailleFenetre(int x, int y)
 	t = this->getTouche(-2, 2, TYPE_TOUCHE_JOYSTIC); // Pointeur y
 	t->setValeurs(0, y);
 	this->lock.unlock();
+}
+
+std::string Controller::intToString(int i) {
+	std::ostringstream oss;
+	oss << i;
+	return oss.str();
 }

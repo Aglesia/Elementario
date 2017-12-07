@@ -29,6 +29,7 @@ class Controller // TODO : Surcharger le copy-constructeur
 		 * Note : L'écoute est arrêtée dès le premier évènement qui match
 		 */
 		void listen(Touche* t);
+		static std::string intToString(int i);
 
 	protected:
 
