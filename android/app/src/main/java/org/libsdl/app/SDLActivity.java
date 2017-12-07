@@ -140,31 +140,31 @@ public class SDLActivity extends Activity {
 
     // Load resources into sdCard
     private void copyRes(){
-        copyFiletoExternalStorage(R.raw.icon, "data/image", "icon.tga");
-        copyFiletoExternalStorage(R.raw.fond, "data/image", "fond.tga");
+        copyFiletoExternalStorage(R.raw.icon, "data/image", "icon.webp");
+        copyFiletoExternalStorage(R.raw.fond, "data/image", "fond.webp");
         copyFiletoExternalStorage(R.raw.chargement, "data/font", "chargement.ttf");
-        copyFiletoExternalStorage(R.raw.conf_axe, "data/image/button/config", "axe.tga");
-        copyFiletoExternalStorage(R.raw.conf_bouton, "data/image/button/config", "bouton.tga");
-        copyFiletoExternalStorage(R.raw.conf_clavier, "data/image/button/config", "clavier.tga");
-        copyFiletoExternalStorage(R.raw.conf_croix, "data/image/button/config", "croix.tga");
-        copyFiletoExternalStorage(R.raw.conf_manette, "data/image/button/config", "manette.tga");
-        copyFiletoExternalStorage(R.raw.conf_molette, "data/image/button/config", "molette.tga");
-        copyFiletoExternalStorage(R.raw.conf_new, "data/image/button/config", "new.tga");
-        copyFiletoExternalStorage(R.raw.conf_souris, "data/image/button/config", "souris.tga");
-        copyFiletoExternalStorage(R.raw.conf_t_1, "data/image/button/config/touche", "1.tga");
-        copyFiletoExternalStorage(R.raw.conf_t_2, "data/image/button/config/touche", "2.tga");
-        copyFiletoExternalStorage(R.raw.conf_t_3, "data/image/button/config/touche", "3.tga");
-        copyFiletoExternalStorage(R.raw.conf_t_4, "data/image/button/config/touche", "4.tga");
-        copyFiletoExternalStorage(R.raw.conf_t_5, "data/image/button/config/touche", "5.tga");
-        copyFiletoExternalStorage(R.raw.conf_t_6, "data/image/button/config/touche", "6.tga");
-        copyFiletoExternalStorage(R.raw.conf_t_7, "data/image/button/config/touche", "7.tga");
-        copyFiletoExternalStorage(R.raw.conf_t_8, "data/image/button/config/touche", "8.tga");
-        copyFiletoExternalStorage(R.raw.conf_t_9, "data/image/button/config/touche", "9.tga");
-        copyFiletoExternalStorage(R.raw.conf_t_0, "data/image/button/config/touche", "0.tga");
-        copyFiletoExternalStorage(R.raw.conf_c_0, "data/image/button/config/categorie", "0.tga");
-        copyFiletoExternalStorage(R.raw.conf_c_1, "data/image/button/config/categorie", "1.tga");
-        copyFiletoExternalStorage(R.raw.conf_c_2, "data/image/button/config/categorie", "2.tga");
-        copyFiletoExternalStorage(R.raw.conf_c_3, "data/image/button/config/categorie", "3.tga");
+        copyFiletoExternalStorage(R.raw.conf_axe, "data/image/button/config", "axe.webp");
+        copyFiletoExternalStorage(R.raw.conf_bouton, "data/image/button/config", "bouton.webp");
+        copyFiletoExternalStorage(R.raw.conf_clavier, "data/image/button/config", "clavier.webp");
+        copyFiletoExternalStorage(R.raw.conf_croix, "data/image/button/config", "croix.webp");
+        copyFiletoExternalStorage(R.raw.conf_manette, "data/image/button/config", "manette.webp");
+        copyFiletoExternalStorage(R.raw.conf_molette, "data/image/button/config", "molette.webp");
+        copyFiletoExternalStorage(R.raw.conf_new, "data/image/button/config", "new.webp");
+        copyFiletoExternalStorage(R.raw.conf_souris, "data/image/button/config", "souris.webp");
+        copyFiletoExternalStorage(R.raw.conf_t_1, "data/image/button/config/touche", "1.webp");
+        copyFiletoExternalStorage(R.raw.conf_t_2, "data/image/button/config/touche", "2.webp");
+        copyFiletoExternalStorage(R.raw.conf_t_3, "data/image/button/config/touche", "3.webp");
+        copyFiletoExternalStorage(R.raw.conf_t_4, "data/image/button/config/touche", "4.webp");
+        copyFiletoExternalStorage(R.raw.conf_t_5, "data/image/button/config/touche", "5.webp");
+        copyFiletoExternalStorage(R.raw.conf_t_6, "data/image/button/config/touche", "6.webp");
+        copyFiletoExternalStorage(R.raw.conf_t_7, "data/image/button/config/touche", "7.webp");
+        copyFiletoExternalStorage(R.raw.conf_t_8, "data/image/button/config/touche", "8.webp");
+        copyFiletoExternalStorage(R.raw.conf_t_9, "data/image/button/config/touche", "9.webp");
+        copyFiletoExternalStorage(R.raw.conf_t_0, "data/image/button/config/touche", "0.webp");
+        copyFiletoExternalStorage(R.raw.conf_c_0, "data/image/button/config/categorie", "0.webp");
+        copyFiletoExternalStorage(R.raw.conf_c_1, "data/image/button/config/categorie", "1.webp");
+        copyFiletoExternalStorage(R.raw.conf_c_2, "data/image/button/config/categorie", "2.webp");
+        copyFiletoExternalStorage(R.raw.conf_c_3, "data/image/button/config/categorie", "3.webp");
     }
 
     // Load the .so
@@ -388,14 +388,14 @@ public class SDLActivity extends Activity {
 
         int keyCode = event.getKeyCode();
         // Ignore certain special keys so they're handled by Android
-        if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN ||
+        /*if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN ||
             keyCode == KeyEvent.KEYCODE_VOLUME_UP ||
             keyCode == KeyEvent.KEYCODE_CAMERA ||
-            keyCode == KeyEvent.KEYCODE_ZOOM_IN || /* API 11 */
-            keyCode == KeyEvent.KEYCODE_ZOOM_OUT /* API 11 */
+            keyCode == KeyEvent.KEYCODE_ZOOM_IN ||
+            keyCode == KeyEvent.KEYCODE_ZOOM_OUT
             ) {
             return false;
-        }
+        }*/
         return super.dispatchKeyEvent(event);
     }
 
@@ -432,7 +432,7 @@ public class SDLActivity extends Activity {
                     // FIXME: Why aren't we enabling sensor input at start?
 
                     final Thread sdlThread = new Thread(new SDLMain(), "SDLThread");
-                    mSurface.enableSensor(Sensor.TYPE_ACCELEROMETER, true);
+                    mSurface.enableSensor(Sensor.TYPE_ACCELEROMETER, false);
                     sdlThread.start();
 
                     // Set up a listener thread to catch when the native thread ends
@@ -1132,7 +1132,7 @@ class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
         requestFocus();
         setOnKeyListener(this);
         setOnTouchListener(this);
-        enableSensor(Sensor.TYPE_ACCELEROMETER, true);
+        enableSensor(Sensor.TYPE_ACCELEROMETER, false);
     }
 
     public Surface getNativeSurface() {
@@ -1143,7 +1143,6 @@ class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
         Log.v("SDL", "surfaceCreated()");
-        holder.setType(SurfaceHolder.SURFACE_TYPE_GPU);
     }
 
     // Called when we lose the surface
@@ -1327,14 +1326,10 @@ class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
 
         // !!! FIXME: dump this SDK check after 2.0.4 ships and require API14.
         if (event.getSource() == InputDevice.SOURCE_MOUSE && SDLActivity.mSeparateMouseAndTouch) {
-            if (Build.VERSION.SDK_INT < 14) {
-                mouseButton = 1; // all mouse buttons are the left button
-            } else {
-                try {
-                    mouseButton = (Integer) event.getClass().getMethod("getButtonState").invoke(event);
-                } catch(Exception e) {
-                    mouseButton = 1;    // oh well.
-                }
+            try {
+                mouseButton = (Integer) event.getClass().getMethod("getButtonState").invoke(event);
+            } catch(Exception e) {
+                mouseButton = 1;    // oh well.
             }
             SDLActivity.onNativeMouse(mouseButton, action, event.getX(0), event.getY(0));
         } else {

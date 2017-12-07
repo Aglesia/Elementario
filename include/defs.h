@@ -31,7 +31,7 @@
 #define TAILLE_FENETRE_X 1280
 #define TAILLE_FENETRE_Y 720
 #define IMG_INIT_FORMAT IMG_INIT_JPG
-#define IMAGE_FORMAT "tga"
+#define IMAGE_FORMAT "webp"
 #define TRANSPARENCE_HEXAGONE_CHARGEMENT 10
 
 // Etat main
@@ -54,13 +54,13 @@
 #define NB_TICKS_DEPLACEMENT_ECRAN 15 // Nombre de ticks entre le début et la fin de la transition entre 2 écrans
 
 // Fichiers
-#define ICONE_FILENAME "data/image/icon.tga"
-#define IMAGE_FOND_FILENAME "data/image/fond.tga"
+#define ICONE_FILENAME "data/image/icon.webp"
+#define IMAGE_FOND_FILENAME "data/image/fond.webp"
 #define POLICE_CHARGEMENT_FILENAME "data/font/chargement.ttf"
 #define POLICE_MENU_FILENAME "data/font/chargement.ttf"
-#define BOUTON_SOURIS_FILENAME "data/image/button/config/mouse.tga"
-#define BOUTON_CLAVIER_FILENAME "data/image/button/config/keyboard.tga"
-#define BOUTON_MANETTE_FILENAME "data/image/button/config/controller.tga"
+#define BOUTON_SOURIS_FILENAME "data/image/button/config/mouse.webp"
+#define BOUTON_CLAVIER_FILENAME "data/image/button/config/keyboard.webp"
+#define BOUTON_MANETTE_FILENAME "data/image/button/config/controller.webp"
 #define BOUTON_CONFIG_DIRNAME "data/image/button/config/"
 #define POLICE_CHARGEMENT_TAILLE 24
 #define POLICE_MENU_TAILLE 18

@@ -10,7 +10,7 @@ Affichage::Affichage(std::string name, std::string path)
 									 SDL_WINDOWPOS_UNDEFINED,
 									 TAILLE_FENETRE_X,
 									 TAILLE_FENETRE_Y,
-									 SDL_WINDOW_SHOWN|SDL_WINDOW_RESIZABLE);
+									 SDL_WINDOW_SHOWN|SDL_WINDOW_RESIZABLE|SDL_WINDOW_ALLOW_HIGHDPI);
 	if(this->pWindow)
 		SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Ouverture de la fenêtre\n");
 	else
@@ -18,7 +18,7 @@ Affichage::Affichage(std::string name, std::string path)
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
 
 	// On crée le renderer
-	this->renderer = SDL_CreateRenderer(this->pWindow, -1, SDL_RENDERER_PRESENTVSYNC|SDL_RENDERER_ACCELERATED);
+	this->renderer = SDL_CreateRenderer(this->pWindow, -1, SDL_RENDERER_PRESENTVSYNC|SDL_RENDERER_ACCELERATED|SDL_RENDERER_TARGETTEXTURE);
 	if(this->renderer)
 	{
 		SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Création du renderer\n");
@@ -120,7 +120,8 @@ void Affichage::update()
 			pos.x = 0;
 			pos.y = 0;
 		}
-		SDL_RenderCopy(this->renderer, this->fond, &pos, nullptr);
+		// TODO : Remettre cette ligne quand ça fonctionera
+		//SDL_RenderCopy(this->renderer, this->fond, &pos, nullptr);
 	}
 
 	// Selon le mode actuel, on appelle la bonne méthode
@@ -389,13 +390,19 @@ int Affichage::init() // TODO : Ajouter tous les éléments à charger + image d
 	SDL_Surface* fondC = IMG_Load(temp2.c_str());
 	if(fondC)
 	{
+		SDL_Surface* fondCC = SDL_ConvertSurfaceFormat(fondC, SDL_PIXELFORMAT_RGB565, 0);
 		this->lock.lock();
-		this->fond = SDL_CreateTextureFromSurface(this->renderer, fondC);
+		this->fond = SDL_CreateTextureFromSurface(this->renderer, fondCC);
 		int x, y;
-		SDL_QueryTexture(this->fond, NULL, NULL, &x, &y);
-		SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Image chargée : taille = %d,%d", x, y);
+		Uint32 format;
+		SDL_QueryTexture(this->fond, &format, NULL, &x, &y);
 		this->lock.unlock();
 		SDL_FreeSurface(fondC);
+		SDL_FreeSurface(fondCC);
+		// TODO : Debug
+		SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Fond chargé : taille = %d,%d, format = %s", x, y, SDL_GetPixelFormatName(format));
+		if(format == SDL_PIXELFORMAT_RGB565)
+			SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Format OK");
 	}
 	else
 	{
@@ -423,9 +430,6 @@ int Affichage::init() // TODO : Ajouter tous les éléments à charger + image d
 	{
 		this->lock.lock();
 		this->gifChargement = SDL_CreateTextureFromSurface(this->renderer, this->icone);
-		int x, y;
-		SDL_QueryTexture(this->gifChargement, NULL, NULL, &x, &y);
-		SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Icône chargée : taille = %d,%d", x, y);
 		this->lock.unlock();
 		SDL_SetWindowIcon(this->pWindow, this->icone);
 	}
