@@ -747,6 +747,8 @@ int main(int argc, char** argv)
 						etat = ETAT_CONFIG_TOUCHES_1;
 						if(t.ret > 0)
 							etat = ETAT_ERREUR;
+						else
+							aff->init_main();
 						break;
 
 					case ETAT_CONFIG_TOUCHES_1:

@@ -1,8 +1,8 @@
 #include <Bouton.h>
 
-Bouton::Bouton(SDL_Texture* boutonTexture, SDL_Renderer* renderer, int taille)
+Bouton::Bouton(SDL_Surface* boutonSurface, SDL_Renderer* renderer, int taille)
 {
-	this->boutonTexture = boutonTexture;
+	this->boutonSurface = boutonSurface;
 	this->renderer = renderer;
 	this->taille = taille;
 }
@@ -12,6 +12,20 @@ Bouton::~Bouton()
 	// On vire le texte
 	if(this->texteTexture)
 		SDL_DestroyTexture(this->texteTexture);
+	if(this->boutonTexture)
+		SDL_DestroyTexture(this->boutonTexture);
+	if(this->boutonSurface)
+		SDL_FreeSurface(this->boutonSurface);
+}
+
+/**
+ * Initialise la texture via la surface donnée
+ * Doit être lancé dans le thread principale
+ */
+void Bouton::init()
+{
+	if(this->boutonSurface)
+		this->boutonTexture = SDL_CreateTextureFromSurface(this->renderer, this->boutonSurface);
 }
 
 /**
@@ -22,6 +36,13 @@ Bouton::~Bouton()
  */
 void Bouton::afficher(SDL_Rect* p, unsigned int nbTicks, bool etatSelection, int opacite)
 {
+	// On vérifie que la texture est initialisée
+	if(this->boutonTexture == nullptr)
+	{
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,  "Impossible d'afficher le bouton : il n'est pas initialisé\n");
+		return;
+	}
+
 	SDL_Rect pos;
 	// On calcul la taille
 	switch(this->etatAnimation)

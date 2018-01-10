@@ -13,8 +13,10 @@ class Affichage
 		virtual ~Affichage();
 		void modePleinEcran(bool pleinEcran = true, int* x = nullptr, int* y = nullptr);
 		void update();
-		// Initialise la fenêtre : charge toutes les textures nécessaires
+		// Initialise la fenêtre : charge toutes les surfaces nécessaires
 		int init();
+		// à appeler dans le main thread, une fois l'init fait : crée les textures depuis les surfaces
+		int init_main();
 		// Retourne le nombre de ticks depuis le lancement du jeu
 		// Si un nombre de ticks est indiqué, retourne le nombre de ticks écoulés depuis la référence donnée
 		unsigned int nbTicks(unsigned int t = 0);
@@ -40,6 +42,8 @@ class Affichage
 		SDL_Renderer* renderer = nullptr; // Rendu de la fenêtre principale
 
 		// Ecran chargement
+		SDL_Surface* fond_surface = nullptr; // Surface du fond de l'écran
+		SDL_Surface* barreChargement_surface = nullptr; // Barre de chargement (surface)
 		SDL_Surface* icone = nullptr; // Icône de l'appli
 		SDL_Texture* fond = nullptr; // Texture du fond de l'écran
 		SDL_Texture* gifChargement = nullptr; // Texture de l'icône de l'application, qui tourne sur l'écran ds chargement
@@ -74,11 +78,11 @@ class Affichage
 
 		// Ecran config touches 4
 		std::vector<Bouton*> configTouches4Boutons; // Ensemble des boutons jeu
-		SDL_Texture* configTouches4TextureBouton = nullptr; // Texture du bouton
-		SDL_Texture* configTouches4TextureAxe = nullptr; // Texture de l'axe
-		SDL_Texture* configTouches4TextureCroix = nullptr; // Texture de la croix directionnelle
-		SDL_Texture* configTouches4TextureMolette = nullptr; // Texture de la molette
-		SDL_Texture* configTouches4TextureNew = nullptr; // Texture de la molette
+		SDL_Surface* configTouches4SurfaceBouton = nullptr; // Surface du bouton
+		SDL_Surface* configTouches4SurfaceAxe = nullptr; // Surface de l'axe
+		SDL_Surface* configTouches4SurfaceCroix = nullptr; // Surface de la croix directionnelle
+		SDL_Surface* configTouches4SurfaceMolette = nullptr; // Surface de la molette
+		SDL_Surface* configTouches4SurfaceNew = nullptr; // Surface de la molette
 		int configTouches4noTouche = 0; // Ligne (noToucheJeu) actuelle
 		int configTouches4noToucheD = 0; // Ligne (noToucheJeu) à atteindre
 		std::vector<Touche*>* configTouches4noController = nullptr; // Ancien contrôleur sélectionné

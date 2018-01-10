@@ -140,31 +140,31 @@ public class SDLActivity extends Activity {
 
     // Load resources into sdCard
     private void copyRes(){
-        copyFiletoExternalStorage(R.raw.icon, "data/image", "icon.webp");
-        copyFiletoExternalStorage(R.raw.fond, "data/image", "fond.webp");
+        copyFiletoExternalStorage(R.raw.icon, "data/image", "icon.png");
+        copyFiletoExternalStorage(R.raw.fond, "data/image", "fond.png");
         copyFiletoExternalStorage(R.raw.chargement, "data/font", "chargement.ttf");
-        copyFiletoExternalStorage(R.raw.conf_axe, "data/image/button/config", "axe.webp");
-        copyFiletoExternalStorage(R.raw.conf_bouton, "data/image/button/config", "bouton.webp");
-        copyFiletoExternalStorage(R.raw.conf_clavier, "data/image/button/config", "clavier.webp");
-        copyFiletoExternalStorage(R.raw.conf_croix, "data/image/button/config", "croix.webp");
-        copyFiletoExternalStorage(R.raw.conf_manette, "data/image/button/config", "manette.webp");
-        copyFiletoExternalStorage(R.raw.conf_molette, "data/image/button/config", "molette.webp");
-        copyFiletoExternalStorage(R.raw.conf_new, "data/image/button/config", "new.webp");
-        copyFiletoExternalStorage(R.raw.conf_souris, "data/image/button/config", "souris.webp");
-        copyFiletoExternalStorage(R.raw.conf_t_1, "data/image/button/config/touche", "1.webp");
-        copyFiletoExternalStorage(R.raw.conf_t_2, "data/image/button/config/touche", "2.webp");
-        copyFiletoExternalStorage(R.raw.conf_t_3, "data/image/button/config/touche", "3.webp");
-        copyFiletoExternalStorage(R.raw.conf_t_4, "data/image/button/config/touche", "4.webp");
-        copyFiletoExternalStorage(R.raw.conf_t_5, "data/image/button/config/touche", "5.webp");
-        copyFiletoExternalStorage(R.raw.conf_t_6, "data/image/button/config/touche", "6.webp");
-        copyFiletoExternalStorage(R.raw.conf_t_7, "data/image/button/config/touche", "7.webp");
-        copyFiletoExternalStorage(R.raw.conf_t_8, "data/image/button/config/touche", "8.webp");
-        copyFiletoExternalStorage(R.raw.conf_t_9, "data/image/button/config/touche", "9.webp");
-        copyFiletoExternalStorage(R.raw.conf_t_0, "data/image/button/config/touche", "0.webp");
-        copyFiletoExternalStorage(R.raw.conf_c_0, "data/image/button/config/categorie", "0.webp");
-        copyFiletoExternalStorage(R.raw.conf_c_1, "data/image/button/config/categorie", "1.webp");
-        copyFiletoExternalStorage(R.raw.conf_c_2, "data/image/button/config/categorie", "2.webp");
-        copyFiletoExternalStorage(R.raw.conf_c_3, "data/image/button/config/categorie", "3.webp");
+        copyFiletoExternalStorage(R.raw.conf_axe, "data/image/button/config", "axe.png");
+        copyFiletoExternalStorage(R.raw.conf_bouton, "data/image/button/config", "bouton.png");
+        copyFiletoExternalStorage(R.raw.conf_clavier, "data/image/button/config", "clavier.png");
+        copyFiletoExternalStorage(R.raw.conf_croix, "data/image/button/config", "croix.png");
+        copyFiletoExternalStorage(R.raw.conf_manette, "data/image/button/config", "manette.png");
+        copyFiletoExternalStorage(R.raw.conf_molette, "data/image/button/config", "molette.png");
+        copyFiletoExternalStorage(R.raw.conf_new, "data/image/button/config", "new.png");
+        copyFiletoExternalStorage(R.raw.conf_souris, "data/image/button/config", "souris.png");
+        copyFiletoExternalStorage(R.raw.conf_t_1, "data/image/button/config/touche", "1.png");
+        copyFiletoExternalStorage(R.raw.conf_t_2, "data/image/button/config/touche", "2.png");
+        copyFiletoExternalStorage(R.raw.conf_t_3, "data/image/button/config/touche", "3.png");
+        copyFiletoExternalStorage(R.raw.conf_t_4, "data/image/button/config/touche", "4.png");
+        copyFiletoExternalStorage(R.raw.conf_t_5, "data/image/button/config/touche", "5.png");
+        copyFiletoExternalStorage(R.raw.conf_t_6, "data/image/button/config/touche", "6.png");
+        copyFiletoExternalStorage(R.raw.conf_t_7, "data/image/button/config/touche", "7.png");
+        copyFiletoExternalStorage(R.raw.conf_t_8, "data/image/button/config/touche", "8.png");
+        copyFiletoExternalStorage(R.raw.conf_t_9, "data/image/button/config/touche", "9.png");
+        copyFiletoExternalStorage(R.raw.conf_t_0, "data/image/button/config/touche", "0.png");
+        copyFiletoExternalStorage(R.raw.conf_c_0, "data/image/button/config/categorie", "0.png");
+        copyFiletoExternalStorage(R.raw.conf_c_1, "data/image/button/config/categorie", "1.png");
+        copyFiletoExternalStorage(R.raw.conf_c_2, "data/image/button/config/categorie", "2.png");
+        copyFiletoExternalStorage(R.raw.conf_c_3, "data/image/button/config/categorie", "3.png");
     }
 
     // Load the .so

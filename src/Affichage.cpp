@@ -47,14 +47,31 @@ Affichage::~Affichage() // TODO : vider toutes les textures
 	if(this->barreChargement)
 		SDL_DestroyTexture(this->barreChargement);
 
+	// On détruit toutes les surfaces
+	if(this->icone)
+		SDL_FreeSurface(this->icone);
+	if(this->fond_surface)
+		SDL_FreeSurface(this->fond_surface);
+	if(this->barreChargement_surface)
+		SDL_FreeSurface(this->barreChargement_surface);
+	if(this->configTouches4SurfaceBouton)
+		SDL_FreeSurface(this->configTouches4SurfaceBouton);
+	if(this->configTouches4SurfaceAxe)
+		SDL_FreeSurface(this->configTouches4SurfaceAxe);
+	if(this->configTouches4SurfaceCroix)
+		SDL_FreeSurface(this->configTouches4SurfaceCroix);
+	if(this->configTouches4SurfaceMolette)
+		SDL_FreeSurface(this->configTouches4SurfaceMolette);
+	if(this->configTouches4SurfaceNew)
+		SDL_FreeSurface(this->configTouches4SurfaceNew);
+
 	// On détruit le renderer
 	if(this->renderer)
 		SDL_DestroyRenderer(this->renderer);
+
 	// On détruit la fenêtre
 	if(this->pWindow)
 		SDL_DestroyWindow(this->pWindow);
-	if(this->icone)
-		SDL_FreeSurface(this->icone);
 	this->lock.unlock();
 }
 
@@ -90,9 +107,22 @@ void Affichage::update()
 		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Impossible de mettre à jour l'écran : %s\n", SDL_GetError());
 	}
 
+	// Barre de chargement :
+	if(this->barreChargement_surface != nullptr && this->barreChargement == nullptr)
+		this->barreChargement = SDL_CreateTextureFromSurface(this->renderer, this->barreChargement_surface);
+
+	// Icône
+	if(this->icone != nullptr && this->gifChargement == nullptr)
+		this->gifChargement = SDL_CreateTextureFromSurface(this->renderer, this->icone);
+
 	// Si le fond est chargé, on l'affiche
-	if(this->fond != nullptr)
+	if(this->fond_surface != nullptr)
 	{
+		// TODO : A CHANGER DE PLACE
+		if(this->fond == nullptr)
+			// Conversion de la surface en texture
+			this->fond = SDL_CreateTextureFromSurface(this->renderer, this->fond_surface);
+
 		// On calcul la taille
 		SDL_Rect pos;
 		SDL_QueryTexture(this->fond, NULL, NULL, &(pos.w), &(pos.h));
@@ -120,8 +150,7 @@ void Affichage::update()
 			pos.x = 0;
 			pos.y = 0;
 		}
-		// TODO : Remettre cette ligne quand ça fonctionera
-		//SDL_RenderCopy(this->renderer, this->fond, &pos, nullptr);
+		SDL_RenderCopy(this->renderer, this->fond, &pos, nullptr);
 	}
 
 	// Selon le mode actuel, on appelle la bonne méthode
@@ -372,12 +401,38 @@ void Affichage::update()
 			// On affiche le texte
 			SDL_RenderCopy(this->renderer, texteT, nullptr, &r);
 			SDL_DestroyTexture(texteT);
-		}
+        }
 	}
 
 	// On rend l'image
 	SDL_RenderPresent(this->renderer);
 	this->lock.unlock();
+}
+
+/**
+ *
+ * @return une erreur s'il y a, 0 sinon
+ */
+int Affichage::init_main(){
+	int error = 0;
+
+    // Icones des catégories de configuration des touches
+    for(int i=0; i<this->configTouches1Boutons.size(); i++)
+        this->configTouches1Boutons[i]->init();
+
+    // Icones des touches de configuration des touches
+    for(int i=0; i<this->configTouches2Boutons.size(); i++)
+        this->configTouches2Boutons[i]->init();
+
+    // Icones des entrées de configuration des touches
+    for(int i=0; i<this->configTouches3Boutons.size(); i++)
+        this->configTouches3Boutons[i]->init();
+
+    // Icones des types de configuration des touches
+    for(int i=0; i<this->configTouches4Boutons.size(); i++)
+        this->configTouches4Boutons[i]->init();
+
+    return error;
 }
 
 int Affichage::init() // TODO : Ajouter tous les éléments à charger + image de fond + calculer % entre chaque chargement
@@ -387,24 +442,10 @@ int Affichage::init() // TODO : Ajouter tous les éléments à charger + image d
 	// On crée un fond noir pour l'écran de chargement
 	std::string temp2 = this->path;
 	temp2 += IMAGE_FOND_FILENAME;
-	SDL_Surface* fondC = IMG_Load(temp2.c_str());
-	if(fondC)
-	{
-		SDL_Surface* fondCC = SDL_ConvertSurfaceFormat(fondC, SDL_PIXELFORMAT_RGB565, 0);
-		this->lock.lock();
-		this->fond = SDL_CreateTextureFromSurface(this->renderer, fondCC);
-		int x, y;
-		Uint32 format;
-		SDL_QueryTexture(this->fond, &format, NULL, &x, &y);
-		this->lock.unlock();
-		SDL_FreeSurface(fondC);
-		SDL_FreeSurface(fondCC);
-		// TODO : Debug
-		SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Fond chargé : taille = %d,%d, format = %s", x, y, SDL_GetPixelFormatName(format));
-		if(format == SDL_PIXELFORMAT_RGB565)
-			SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Format OK");
-	}
-	else
+	this->lock.lock();
+	this->fond_surface = IMG_Load(temp2.c_str());
+	this->lock.unlock();
+	if(this->fond_surface == nullptr)
 	{
 		error = 1;
 		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,  "Impossible de charger l'image de fond : %s\n", IMG_GetError());
@@ -412,27 +453,20 @@ int Affichage::init() // TODO : Ajouter tous les éléments à charger + image d
 
 	// On crée la barre de chargement
 	this->afficherEcranChargement(25, "Chargement...");
-	fondC = SDL_CreateRGBSurface(0, 1, 1, 32, rmask, gmask, bmask, amask);
-	SDL_FillRect(fondC, NULL, SDL_MapRGB(fondC->format, COULEUR_BARRE_CHARGEMENT_R, COULEUR_BARRE_CHARGEMENT_G, COULEUR_BARRE_CHARGEMENT_B));
 	this->lock.lock();
-	this->barreChargement = SDL_CreateTextureFromSurface(this->renderer, fondC);
+	this->barreChargement_surface = SDL_CreateRGBSurface(0, 1, 1, 32, rmask, gmask, bmask, amask);
+	SDL_FillRect(this->barreChargement_surface, NULL, SDL_MapRGB(this->barreChargement_surface->format, COULEUR_BARRE_CHARGEMENT_R, COULEUR_BARRE_CHARGEMENT_G, COULEUR_BARRE_CHARGEMENT_B));
 	this->lock.unlock();
-	SDL_FreeSurface(fondC);
 
 	// On charge l'icône de l'appli (qui sera aussi le gif de chargement)
 	this->afficherEcranChargement(50, "Chargement de l'icône du jeu");
-	this->lock.lock();
 	temp2 = this->path;
 	temp2 += ICONE_FILENAME;
+	this->lock.lock();
 	this->icone = IMG_Load(temp2.c_str());
 	this->lock.unlock();
 	if(this->icone)
-	{
-		this->lock.lock();
-		this->gifChargement = SDL_CreateTextureFromSurface(this->renderer, this->icone);
-		this->lock.unlock();
 		SDL_SetWindowIcon(this->pWindow, this->icone);
-	}
 	else
 	{
 		error = 1;
@@ -479,14 +513,14 @@ int Affichage::init() // TODO : Ajouter tous les éléments à charger + image d
 		temp2 += Affichage::intToString(i);
 		temp2 += ".";
 		temp2 += IMAGE_FORMAT;
-		fondC = IMG_Load(temp2.c_str());
+
+		SDL_Surface* fondC = IMG_Load(temp2.c_str());
 		if(fondC)
 		{
+			Bouton* b = new Bouton(fondC, this->renderer, TAILLE_ICONE_CONFIG_TOUCHE);
 			this->lock.lock();
-			Bouton* b = new Bouton(SDL_CreateTextureFromSurface(this->renderer, fondC), this->renderer, TAILLE_ICONE_CONFIG_TOUCHE);
 			this->configTouches1Boutons.push_back(b);
 			this->lock.unlock();
-			SDL_FreeSurface(fondC);
 		}
 		else
 		{
@@ -509,14 +543,14 @@ int Affichage::init() // TODO : Ajouter tous les éléments à charger + image d
 		temp2 += Affichage::intToString(i);
 		temp2 += ".";
 		temp2 += IMAGE_FORMAT;
-		fondC = IMG_Load(temp2.c_str());
+
+		SDL_Surface* fondC = IMG_Load(temp2.c_str());
 		if(fondC)
 		{
+			Bouton* b = new Bouton(fondC, this->renderer, TAILLE_ICONE_CONFIG_TOUCHE);
 			this->lock.lock();
-			Bouton* b = new Bouton(SDL_CreateTextureFromSurface(this->renderer, fondC), this->renderer, TAILLE_ICONE_CONFIG_TOUCHE);
 			this->configTouches2Boutons.push_back(b);
 			this->lock.unlock();
-			SDL_FreeSurface(fondC);
 		}
 		else
 		{
@@ -533,14 +567,14 @@ int Affichage::init() // TODO : Ajouter tous les éléments à charger + image d
 		temp2 += BOUTON_CONFIG_DIRNAME;
 		temp2 += "souris.";
 		temp2 += IMAGE_FORMAT;
-		fondC = IMG_Load(temp2.c_str());
+
+        SDL_Surface* fondC = IMG_Load(temp2.c_str());
 		if(fondC)
 		{
+			Bouton* b = new Bouton(fondC, this->renderer, TAILLE_ICONE_CONFIG_TOUCHE);
 			this->lock.lock();
-			Bouton* b = new Bouton(SDL_CreateTextureFromSurface(this->renderer, fondC), this->renderer, TAILLE_ICONE_CONFIG_TOUCHE);
 			this->configTouches3Boutons.push_back(b);
 			this->lock.unlock();
-			SDL_FreeSurface(fondC);
 		}
 		else
 		{
@@ -557,14 +591,14 @@ int Affichage::init() // TODO : Ajouter tous les éléments à charger + image d
 		temp2 += BOUTON_CONFIG_DIRNAME;
 		temp2 += "clavier.";
 		temp2 += IMAGE_FORMAT;
-		fondC = IMG_Load(temp2.c_str());
+
+		SDL_Surface* fondC = IMG_Load(temp2.c_str());
 		if(fondC)
 		{
+			Bouton* b = new Bouton(fondC, this->renderer, TAILLE_ICONE_CONFIG_TOUCHE);
 			this->lock.lock();
-			Bouton* b = new Bouton(SDL_CreateTextureFromSurface(this->renderer, fondC), this->renderer, TAILLE_ICONE_CONFIG_TOUCHE);
 			this->configTouches3Boutons.push_back(b);
 			this->lock.unlock();
-			SDL_FreeSurface(fondC);
 		}
 		else
 		{
@@ -579,12 +613,10 @@ int Affichage::init() // TODO : Ajouter tous les éléments à charger + image d
 		temp2 += BOUTON_CONFIG_DIRNAME;
 		temp2 += "bouton.";
 		temp2 += IMAGE_FORMAT;
+
 		SDL_Surface* fondC = IMG_Load(temp2.c_str());
 		if(fondC)
-		{
-			this->configTouches4TextureBouton = SDL_CreateTextureFromSurface(this->renderer, fondC);
-			SDL_FreeSurface(fondC);
-		}
+			this->configTouches4SurfaceBouton = fondC;
 		else
 		{
 			error = 3;
@@ -598,12 +630,10 @@ int Affichage::init() // TODO : Ajouter tous les éléments à charger + image d
 		temp2 += BOUTON_CONFIG_DIRNAME;
 		temp2 += "axe.";
 		temp2 += IMAGE_FORMAT;
+
 		SDL_Surface* fondC = IMG_Load(temp2.c_str());
 		if(fondC)
-		{
-			this->configTouches4TextureAxe = SDL_CreateTextureFromSurface(this->renderer, fondC);
-			SDL_FreeSurface(fondC);
-		}
+			this->configTouches4SurfaceAxe = fondC;
 		else
 		{
 			error = 3;
@@ -617,12 +647,10 @@ int Affichage::init() // TODO : Ajouter tous les éléments à charger + image d
 		temp2 += BOUTON_CONFIG_DIRNAME;
 		temp2 += "croix.";
 		temp2 += IMAGE_FORMAT;
+
 		SDL_Surface* fondC = IMG_Load(temp2.c_str());
 		if(fondC)
-		{
-			this->configTouches4TextureCroix = SDL_CreateTextureFromSurface(this->renderer, fondC);
-			SDL_FreeSurface(fondC);
-		}
+			this->configTouches4SurfaceCroix = fondC;
 		else
 		{
 			error = 3;
@@ -636,12 +664,10 @@ int Affichage::init() // TODO : Ajouter tous les éléments à charger + image d
 		temp2 += BOUTON_CONFIG_DIRNAME;
 		temp2 += "molette.";
 		temp2 += IMAGE_FORMAT;
+
 		SDL_Surface* fondC = IMG_Load(temp2.c_str());
 		if(fondC)
-		{
-			this->configTouches4TextureMolette = SDL_CreateTextureFromSurface(this->renderer, fondC);
-			SDL_FreeSurface(fondC);
-		}
+			this->configTouches4SurfaceMolette = fondC;
 		else
 		{
 			error = 3;
@@ -655,12 +681,10 @@ int Affichage::init() // TODO : Ajouter tous les éléments à charger + image d
 		temp2 += BOUTON_CONFIG_DIRNAME;
 		temp2 += "new.";
 		temp2 += IMAGE_FORMAT;
+
 		SDL_Surface* fondC = IMG_Load(temp2.c_str());
 		if(fondC)
-		{
-			this->configTouches4TextureNew = SDL_CreateTextureFromSurface(this->renderer, fondC);
-			SDL_FreeSurface(fondC);
-		}
+			this->configTouches4SurfaceNew = fondC;
 		else
 		{
 			error = 3;
@@ -960,19 +984,18 @@ void Affichage::afficherMenuConfigTouches3(int nbController, int noController, i
 		this->configTouches3noControllerD = noController;
 		this->configTouchesNbTicksAnimation = this->nbTicks();
 		// Si on doit rajouter des boutons
-		for(int i=configTouches3Boutons.size(); i<nbController+2; i++)
-		{
+		for(int i=configTouches3Boutons.size(); i<nbController+2; i++) {
 			std::string temp2 = BOUTON_CONFIG_DIRNAME;
 			temp2 += "manette.";
 			temp2 += IMAGE_FORMAT;
-			SDL_Surface* fondC = IMG_Load(temp2.c_str());
-			if(fondC)
-			{
-				this->configTouches3Boutons.push_back(new Bouton(SDL_CreateTextureFromSurface(this->renderer, fondC), this->renderer, TAILLE_ICONE_CONFIG_TOUCHE));
-				SDL_FreeSurface(fondC);
+			SDL_Surface *fondC = IMG_Load(temp2.c_str());
+			if (fondC) {
+				Bouton* bt = new Bouton(fondC, this->renderer, TAILLE_ICONE_CONFIG_TOUCHE);
+				bt->init();
+				this->configTouches3Boutons.push_back(bt);
 			}
 			else
-				SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,  "Impossible de charger l'icône : %s\n", IMG_GetError());
+				SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,  "Impossible de charger le bouton : %s\n", IMG_GetError());
 		}
 		this->lock.unlock();
 	}
@@ -1040,27 +1063,31 @@ void Affichage::afficherMenuConfigTouches4(std::vector<Touche*>* t, int noTouche
 			// On recrée les boutons
 			for(int i=0; i<t->size(); i++)
 			{
-				SDL_Texture* tex = this->configTouches4TextureCroix;
+				SDL_Surface* tex = this->configTouches4SurfaceCroix;
 				switch((*t)[i]->getType())
 				{
 					case TYPE_TOUCHE_MOLETTE:
-						tex = this->configTouches4TextureMolette;
+						tex = this->configTouches4SurfaceMolette;
 						break;
 
 					case TYPE_TOUCHE_BOUTON:
-						tex = this->configTouches4TextureBouton;
+						tex = this->configTouches4SurfaceBouton;
 						break;
 
 					case TYPE_TOUCHE_JOYSTIC:
-						tex = this->configTouches4TextureAxe;
+						tex = this->configTouches4SurfaceAxe;
 						break;
 
 					default:
 						break;
 				}
-				this->configTouches4Boutons.push_back(new Bouton(tex, this->renderer, TAILLE_ICONE_CONFIG_TOUCHE));
+				Bouton* bt = new Bouton(tex, this->renderer, TAILLE_ICONE_CONFIG_TOUCHE);
+				bt->init();
+				this->configTouches4Boutons.push_back(bt);
 			}
-			this->configTouches4Boutons.push_back(new Bouton(this->configTouches4TextureNew, this->renderer, TAILLE_ICONE_CONFIG_TOUCHE));
+			Bouton* bt = new Bouton(this->configTouches4SurfaceNew, this->renderer, TAILLE_ICONE_CONFIG_TOUCHE);
+			bt->init();
+			this->configTouches4Boutons.push_back(bt);
 		}
 		this->lock.unlock();
 	}
