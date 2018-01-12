@@ -1,12 +1,12 @@
 #include "Controller.h"
 
-Controller::Controller(ToucheJeu** touchesJeu)
+Controller::Controller(BundleTouche* persistant)
 {
-	this->touchesJeu = touchesJeu;
+	this->persistant = persistant;
 	this->manettes.clear();
-	this->touchesInput.clear();
 	// Gestion des évènements pour les manettes
 	SDL_JoystickEventState(SDL_ENABLE);
+
 	this->manetteSouris = new Manette();
 	this->manetteSouris->nbBouton = NB_TOUCHES_SOURIS;
 	this->manetteSouris->nbJoystick = 2;
@@ -14,42 +14,49 @@ Controller::Controller(ToucheJeu** touchesJeu)
 	this->manetteSouris->nbDirection = 0;
 	this->manetteSouris->name = "Souris";
 	this->manetteSouris->id = -2;
+
 	this->manetteClavier = new Manette();
-	this->manetteClavier->nbBouton = 62; // TODO : corriger
+	this->manetteClavier->nbBouton = 353;
 	this->manetteClavier->nbJoystick = 0;
 	this->manetteClavier->nbMolette = 0;
 	this->manetteClavier->nbDirection = 0;
 	this->manetteClavier->name = "Clavier";
 	this->manetteClavier->id = -1;
+
 	// Boutons souris
 	for(int i=1; i<=NB_TOUCHES_SOURIS; i++)
 	{
 		Touche* t = new Touche(-2, i, TYPE_TOUCHE_BOUTON);
-		this->touchesInput.push_back(t);
+		this->manetteSouris->ajoutTouche(t);
 		t->configure = true;
 		t->nom = "Bouton "+Controller::intToString(i);
 	}
+
 	Touche* t = new Touche(-2, 1, TYPE_TOUCHE_MOLETTE); // Molette x
-	this->touchesInput.push_back(t);
-	t->setValeurs(-100, 100);
+	this->manetteSouris->ajoutTouche(t);
+	t->setValeursBrut(-100, 100);
+	t->setValeurs(-PRECISION_VALEUR_AXE_TOUCHE, PRECISION_VALEUR_AXE_TOUCHE);
 	t->configure = true;
 	t->nom = "Molette X";
 
 	t = new Touche(-2, 2, TYPE_TOUCHE_MOLETTE); // Molette y
-	this->touchesInput.push_back(t);
-	t->setValeurs(-100, 100);
+	this->manetteSouris->ajoutTouche(t);
+	t->setValeursBrut(-100, 100);
+	t->setValeurs(-PRECISION_VALEUR_AXE_TOUCHE, PRECISION_VALEUR_AXE_TOUCHE);
 	t->configure = true;
 	t->nom = "Molette Y";
 
 	t = new Touche(-2, 1, TYPE_TOUCHE_JOYSTIC); // Pointeur x
-	this->touchesInput.push_back(t);
-	t->setValeurs(0, TAILLE_FENETRE_X);
+	this->manetteSouris->ajoutTouche(t);
+	t->setValeursBrut(0, TAILLE_FENETRE_X);
+	t->setValeurs(-PRECISION_VALEUR_AXE_TOUCHE, PRECISION_VALEUR_AXE_TOUCHE);
 	t->configure = true;
 	t->nom = "Pointeur X";
 
 	t = new Touche(-2, 2, TYPE_TOUCHE_JOYSTIC); // Pointeur y
-	this->touchesInput.push_back(t);
-	t->setValeurs(0, TAILLE_FENETRE_Y);
+	this->manetteSouris->ajoutTouche(t);
+	t->setValeursBrut(0, TAILLE_FENETRE_Y);
+	t->setValeurs(-PRECISION_VALEUR_AXE_TOUCHE, PRECISION_VALEUR_AXE_TOUCHE);
 	t->configure = true;
 	t->nom = "Pointeur Y";
 
@@ -57,29 +64,33 @@ Controller::Controller(ToucheJeu** touchesJeu)
 	for(int i=0; i<=127; i++)
 	{
 		t = new Touche(-1, i, TYPE_TOUCHE_BOUTON);
+		t->setValeursBrut(0, 1);
+		t->setValeurs(0, 1);
 		t->nom = SDL_GetKeyName(i);
 		t->configure = true;
-		this->touchesInput.push_back(t);
+		this->manetteClavier->ajoutTouche(t);
 	}
 	for(int i=1073741881; i<=1073742106; i++)
 	{
 		t = new Touche(-1, i, TYPE_TOUCHE_BOUTON);
+		t->setValeursBrut(0, 1);
+		t->setValeurs(0, 1);
 		t->nom = SDL_GetKeyName(i);
 		t->configure = true;
-		this->touchesInput.push_back(t);
+		this->manetteClavier->ajoutTouche(t);
 	}
-
 }
 
 Controller::~Controller()
 {
-	// On ferme tous les contrôlleurs
+	// On ferme tous les contrôleurs
 	for(int i=0; i<this->manettes.size(); i++)
 		delete this->manettes[i];
-	for(int i=0; i<this->touchesInput.size(); i++)
-		delete this->touchesInput[i];
 	this->manettes.clear();
-	this->touchesInput.clear();
+}
+
+void Controller::setBundle(BundleTouche* bundle){
+	this->bundle = bundle;
 }
 
 void Controller::update()
@@ -112,7 +123,9 @@ void Controller::update()
 						for(int i=1; i<=m->nbBouton; i++)
 						{
 							Touche* t = new Touche(m->id, i, TYPE_TOUCHE_BOUTON);
-							this->touchesInput.push_back(t);
+							m->ajoutTouche(t);
+							t->setValeursBrut(0, 1);
+							t->setValeurs(0, 1);
 							t->nom = "Bouton "+Controller::intToString(i);
 							t->configure = true;
 							SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Nouveau bouton : %s\n", t->nom.c_str());
@@ -120,7 +133,8 @@ void Controller::update()
 						for(int i=1; i<=m->nbJoystick; i++)
 						{
 							Touche* t = new Touche(m->id, i, TYPE_TOUCHE_JOYSTIC);
-							this->touchesInput.push_back(t);
+							m->ajoutTouche(t);
+							t->setValeurs(-255, 255);
 							t->nom = "Axe "+Controller::intToString(i);
 							t->configure = true;
 							SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Nouvel axe : %s\n", t->nom.c_str());
@@ -128,16 +142,18 @@ void Controller::update()
 						for(int i=1; i<=m->nbDirection*2; i+=2)
 						{
 							Touche* t = new Touche(m->id, i, TYPE_TOUCHE_DIRECTION);
-							this->touchesInput.push_back(t);
+							m->ajoutTouche(t);
 							t->nom = "Croix direction "+Controller::intToString(i);
-							t->setValeurs(-100, 100);
+							t->setValeursBrut(-100, 100);
+							t->setValeurs(-255, 255);
 							t->configure = true;
 							SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Nouvel axe directionnel : %s\n", t->nom.c_str());
 
 							t = new Touche(m->id, i+1, TYPE_TOUCHE_DIRECTION);
-							this->touchesInput.push_back(t);
+							m->ajoutTouche(t);
 							t->nom = "Croix direction "+Controller::intToString(i+1);
-							t->setValeurs(-100, 100);
+							t->setValeursBrut(-100, 100);
+							t->setValeurs(-255, 255);
 							t->configure = true;
 							SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Nouvel axe directionnel : %s\n", t->nom.c_str());
 						}
@@ -158,13 +174,14 @@ void Controller::update()
 					//SDL_JoystickClose((SDL_Joystick*)event.jdevice.which);
 					for(unsigned int i=0; i<this->manettes.size(); i++)
 						if(this->manettes.at(i)->id == event.jdevice.which){
-							SDL_JoystickClose(this->manettes.at(i)->joy);
 							SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Adresse : %d\n", this->manettes.at(i)->joy);
+							delete this->manettes.at(i);
 							this->manettes.erase(this->manettes.begin() + i);
 						}
 				}
 				break;
 
+			// Quitter
 			case SDL_QUIT:
 				this->doitQuitter = true;
 				break;
@@ -177,18 +194,17 @@ void Controller::update()
 					this->lock.lock();
 					if(t != nullptr)
 					{
-						t->setPressed(true);
+						t->setValAxe(1);
 						this->event(t);
 					}
 					if(this->toucheEcoutee != nullptr)
 					{
-						if(this->toucheEcoutee->getNoManette() == -1)
+						if(this->toucheEcoutee->getNoManette() == -1 && !this->toucheEcoutee->getInversion())
 						{
 							this->toucheEcoutee->setNoTouche(event.key.keysym.sym);
 							this->toucheEcoutee->setType(TYPE_TOUCHE_BOUTON);
-							this->toucheEcoutee->setValAxe(this->toucheEcoutee->getValeurMax());
-							this->toucheEcoutee->setPressed(true);
-							this->toucheEcoutee = nullptr;
+							this->toucheEcoutee->setValAxe(1);
+							this->toucheEcoutee->setInversion(true);
 						}
 					}
 				}
@@ -202,18 +218,17 @@ void Controller::update()
 					this->lock.lock();
 					if(t != nullptr)
 					{
-						t->setPressed(false);
+						t->setValAxe(0);
 						this->event(t);
 					}
 					if(this->toucheEcoutee != nullptr)
 					{
-						if(this->toucheEcoutee->getNoManette() == -1)
+						if(this->toucheEcoutee->getNoManette() == -1 && !this->toucheEcoutee->getInversion())
 						{
 							this->toucheEcoutee->setNoTouche(event.key.keysym.sym);
 							this->toucheEcoutee->setType(TYPE_TOUCHE_BOUTON);
-							this->toucheEcoutee->setValAxe(this->toucheEcoutee->getValeurMin());
-							this->toucheEcoutee->setPressed(false);
-							this->toucheEcoutee = nullptr;
+							this->toucheEcoutee->setValAxe(0);
+							this->toucheEcoutee->setInversion(true);
 						}
 					}
 				}
@@ -232,12 +247,13 @@ void Controller::update()
 						this->event(tx);
 						if(this->toucheEcoutee != nullptr)
 						{
-							if(this->toucheEcoutee->getNoManette() == -2)
+							if(this->toucheEcoutee->getNoManette() == -2 && !this->toucheEcoutee->getInversion())
 							{
 								this->toucheEcoutee->setNoTouche(1);
 								this->toucheEcoutee->setType(TYPE_TOUCHE_JOYSTIC);
+								this->toucheEcoutee->setValeursBrut(0, TAILLE_FENETRE_X);
 								this->toucheEcoutee->setValAxe(event.motion.x);
-								this->toucheEcoutee = nullptr;
+								this->toucheEcoutee->setInversion(true);
 							}
 						}
 					}
@@ -247,12 +263,13 @@ void Controller::update()
 						this->event(ty);
 						if(this->toucheEcoutee != nullptr)
 						{
-							if(this->toucheEcoutee->getNoManette() == -2)
+							if(this->toucheEcoutee->getNoManette() == -2 && !this->toucheEcoutee->getInversion())
 							{
 								this->toucheEcoutee->setNoTouche(2);
 								this->toucheEcoutee->setType(TYPE_TOUCHE_JOYSTIC);
+								this->toucheEcoutee->setValeursBrut(0, TAILLE_FENETRE_Y);
 								this->toucheEcoutee->setValAxe(event.motion.y);
-								this->toucheEcoutee = nullptr;
+								this->toucheEcoutee->setInversion(true);
 							}
 						}
 					}
@@ -267,18 +284,17 @@ void Controller::update()
 					this->lock.lock();
 					if(t != nullptr)
 					{
-						t->setPressed(true);
+						t->setValAxe(1);
 						this->event(t);
-					}
-					if(this->toucheEcoutee != nullptr)
-					{
-						if(this->toucheEcoutee->getNoManette() == -2)
+						if(this->toucheEcoutee != nullptr)
 						{
-							this->toucheEcoutee->setNoTouche(event.button.button);
-							this->toucheEcoutee->setType(TYPE_TOUCHE_BOUTON);
-							this->toucheEcoutee->setValAxe(this->toucheEcoutee->getValeurMax());
-							this->toucheEcoutee->setPressed(true);
-							this->toucheEcoutee = nullptr;
+							if(this->toucheEcoutee->getNoManette() == -2 && !this->toucheEcoutee->getInversion())
+							{
+								this->toucheEcoutee->setNoTouche(event.button.button);
+								this->toucheEcoutee->setType(TYPE_TOUCHE_BOUTON);
+								this->toucheEcoutee->setValAxe(1);
+								this->toucheEcoutee->setInversion(true);
+							}
 						}
 					}
 				}
@@ -292,17 +308,16 @@ void Controller::update()
 					this->lock.lock();
 					if(t != nullptr)
 					{
-						t->setPressed(false);
+						t->setValAxe(0);
 						this->event(t);
 						if(this->toucheEcoutee != nullptr)
 						{
-							if(this->toucheEcoutee->getNoManette() == -2)
+							if(this->toucheEcoutee->getNoManette() == -2 && !this->toucheEcoutee->getInversion())
 							{
 								this->toucheEcoutee->setNoTouche(event.button.button);
 								this->toucheEcoutee->setType(TYPE_TOUCHE_BOUTON);
-								this->toucheEcoutee->setValAxe(this->toucheEcoutee->getValeurMin());
-								this->toucheEcoutee->setPressed(false);
-								this->toucheEcoutee = nullptr;
+								this->toucheEcoutee->setValAxe(0);
+								this->toucheEcoutee->setInversion(true);
 							}
 						}
 					}
@@ -322,12 +337,12 @@ void Controller::update()
 						this->event(tx);
 						if(this->toucheEcoutee != nullptr)
 						{
-							if(this->toucheEcoutee->getNoManette() == -2)
+							if(this->toucheEcoutee->getNoManette() == -2 && !this->toucheEcoutee->getInversion())
 							{
 								this->toucheEcoutee->setNoTouche(1);
 								this->toucheEcoutee->setType(TYPE_TOUCHE_MOLETTE);
-								this->toucheEcoutee->setValAxe(event.motion.y);
-								this->toucheEcoutee = nullptr;
+								this->toucheEcoutee->setValAxe(event.motion.x);
+								this->toucheEcoutee->setInversion(true);
 							}
 						}
 					}
@@ -337,12 +352,12 @@ void Controller::update()
 						this->event(ty);
 						if(this->toucheEcoutee != nullptr)
 						{
-							if(this->toucheEcoutee->getNoManette() == -2)
+							if(this->toucheEcoutee->getNoManette() == -2 && !this->toucheEcoutee->getInversion())
 							{
 								this->toucheEcoutee->setNoTouche(2);
 								this->toucheEcoutee->setType(TYPE_TOUCHE_MOLETTE);
 								this->toucheEcoutee->setValAxe(event.motion.y);
-								this->toucheEcoutee = nullptr;
+								this->toucheEcoutee->setInversion(true);
 							}
 						}
 					}
@@ -362,12 +377,12 @@ void Controller::update()
 						this->event(t);
 						if(this->toucheEcoutee != nullptr)
 						{
-							if(this->toucheEcoutee->getNoManette() == event.jaxis.which)
+							if(this->toucheEcoutee->getNoManette() == event.jaxis.which && !this->toucheEcoutee->getInversion())
 							{
 								this->toucheEcoutee->setNoTouche(event.jaxis.axis+1);
 								this->toucheEcoutee->setType(TYPE_TOUCHE_JOYSTIC);
 								this->toucheEcoutee->setValAxe(event.jaxis.value);
-								this->toucheEcoutee = nullptr;
+								this->toucheEcoutee->setInversion(true);
 							}
 						}
 					}
@@ -382,18 +397,17 @@ void Controller::update()
 					this->lock.lock();
 					if(t != nullptr)
 					{
-						t->setPressed(true);
+						t->setValAxe(1);
 						this->event(t);
 					}
 					if(this->toucheEcoutee != nullptr)
 					{
-						if(this->toucheEcoutee->getNoManette() == event.jbutton.which)
+						if(this->toucheEcoutee->getNoManette() == event.jbutton.which && !this->toucheEcoutee->getInversion())
 						{
 							this->toucheEcoutee->setNoTouche(event.jbutton.button+1);
 							this->toucheEcoutee->setType(TYPE_TOUCHE_BOUTON);
-							this->toucheEcoutee->setValAxe(this->toucheEcoutee->getValeurMax());
-							this->toucheEcoutee->setPressed(true);
-							this->toucheEcoutee = nullptr;
+							this->toucheEcoutee->setValAxe(1);
+							this->toucheEcoutee->setInversion(true);
 						}
 					}
 				}
@@ -407,18 +421,18 @@ void Controller::update()
 					this->lock.lock();
 					if(t != nullptr)
 					{
-						t->setPressed(false);
+						t->setValAxe(0);
 						this->event(t);
 					}
 					if(this->toucheEcoutee != nullptr)
 					{
-						if(this->toucheEcoutee->getNoManette() == event.jbutton.which)
+						if(this->toucheEcoutee->getNoManette() == event.jbutton.which && !this->toucheEcoutee->getInversion())
 						{
 							this->toucheEcoutee->setNoTouche(event.jbutton.button+1);
 							this->toucheEcoutee->setType(TYPE_TOUCHE_BOUTON);
 							this->toucheEcoutee->setValAxe(this->toucheEcoutee->getValeurMin());
-							this->toucheEcoutee->setPressed(false);
-							this->toucheEcoutee = nullptr;
+							this->toucheEcoutee->setValAxe(0);
+							this->toucheEcoutee->setInversion(true);
 						}
 					}
 				}
@@ -437,68 +451,80 @@ void Controller::update()
 					this->lock.lock();
 					if(t != nullptr)
 					{
+						int v;
+						int ancienneVal = t->getValAxe();
 						// On calcul la direction
 						switch(event.jhat.value)
 						{
 							case SDL_HAT_LEFT:
 							case SDL_HAT_LEFTUP:
 							case SDL_HAT_LEFTDOWN:
-								t->setValAxe(-100);
+								v=-100;
 								break;
 
 							case SDL_HAT_RIGHT:
 							case SDL_HAT_RIGHTUP:
 							case SDL_HAT_RIGHTDOWN:
-								t->setValAxe(100);
+								v=100;
 								break;
 
 							default:
-								t->setValAxe(0);
+								v=0;
 						}
+						t->setValAxe(v);
 						this->event(t);
-						if(this->toucheEcoutee != nullptr)
+
+						if(this->toucheEcoutee != nullptr && ancienneVal != t->getValAxe())
 						{
-							if(this->toucheEcoutee->getNoManette() == event.jbutton.which)
+							if(this->toucheEcoutee->getNoManette() == event.jbutton.which && !this->toucheEcoutee->getInversion())
 							{
 								this->toucheEcoutee->setNoTouche((event.jhat.hat*2)+1);
 								this->toucheEcoutee->setType(TYPE_TOUCHE_DIRECTION);
-								this->toucheEcoutee->setPressed(t->getValBrutAxe() != 0);
-								this->toucheEcoutee = nullptr;
+								this->toucheEcoutee->setValeursBrut(-100, 100);
+								this->toucheEcoutee->setValeurs(-255, 255);
+								this->toucheEcoutee->setValAxe(v);
+								this->toucheEcoutee->setInversion(true);
 							}
 						}
 					}
+
 					this->lock.unlock();
 					t = this->getTouche(event.jbutton.which, (event.jhat.hat*2)+2, TYPE_TOUCHE_DIRECTION);
 					this->lock.lock();
 					if(t != nullptr)
 					{
+						int v;
+						int ancienneVal = t->getValAxe();
 						// On calcul la direction
 						switch(event.jhat.value)
 						{
 							case SDL_HAT_UP:
 							case SDL_HAT_RIGHTUP:
 							case SDL_HAT_LEFTUP:
-								t->setValAxe(-100);
+								v=-100;
 								break;
 
 							case SDL_HAT_DOWN:
 							case SDL_HAT_RIGHTDOWN:
 							case SDL_HAT_LEFTDOWN:
-								t->setValAxe(100);
+								v=100;
 								break;
 
 							default:
-								t->setValAxe(0);
+								v=0;
 						}
+						t->setValAxe(v);
 						this->event(t);
-						if(this->toucheEcoutee != nullptr)
+						if(this->toucheEcoutee != nullptr && ancienneVal != t->getValAxe())
 						{
-							if(this->toucheEcoutee->getNoManette() == event.jbutton.which)
+							if(this->toucheEcoutee->getNoManette() == event.jbutton.which && !this->toucheEcoutee->getInversion())
 							{
 								this->toucheEcoutee->setNoTouche((event.jhat.hat*2)+2);
 								this->toucheEcoutee->setType(TYPE_TOUCHE_DIRECTION);
-								this->toucheEcoutee->setPressed(t->getValBrutAxe() != 0);
-								this->toucheEcoutee = nullptr;
+								this->toucheEcoutee->setValeursBrut(-100, 100);
+								this->toucheEcoutee->setValeurs(-255, 255);
+								this->toucheEcoutee->setValAxe(v);
+								this->toucheEcoutee->setInversion(true);
 							}
 						}
 					}
@@ -585,61 +611,39 @@ bool Controller::quitter()
 Touche* Controller::getTouche(int noJoystic, int noBouton, int typeBouton)
 {
 	Touche* ret = nullptr;
-	this->lock.lock();
-	for(int i=0; i<this->touchesInput.size(); i++)
-		if(this->touchesInput[i]->isTouche(noJoystic, noBouton, typeBouton))
-			ret = this->touchesInput[i];
-	this->lock.unlock();
+
+	Manette* m = getController(noJoystic);
+	if(m != nullptr)
+		ret = m->getTouche(noBouton, typeBouton);
+
 	return ret;
 }
 
 void Controller::event(Touche* t)
 {
-	// On indique à tout le monde que la touche vient de changer
-	for(int i=0; i<NB_TOUCHES_JEU; i++)
-		if(this->touchesJeu[i] != nullptr)
-			this->touchesJeu[i]->nouvelEvenement(t);
-}
-
-std::vector<Touche*> Controller::getTouches()
-{
-	std::vector<Touche*> ret;
-	this->lock.lock();
-	ret = this->touchesInput,
-	this->lock.unlock();
-	return ret;
+	t->activer(); // On indique que l'action n'est pas inhibée
+	if(this->bundle == nullptr)
+		this->persistant->nouvelEvenement(t);
+	// On indique au bundle que la touche vient de changer
+	else if(!this->bundle->nouvelEvenement(t))
+		// Si la touche n'a pas été traitée, on l'envoie au bundle persistant
+		this->persistant->nouvelEvenement(t);
 }
 
 void Controller::mapManette(Manette* m) // TODO
 {
-	if(this->touchesJeu != nullptr)
+	this->lock.lock();
+	// On regarde si une configuration correspondant à la manette existe (même nom, nb touches, nb axe et nb direction)
+	// Si oui, on map en suivant cette configuration
+	// Sinon on fait une configuration de base
+	//else
 	{
-		this->lock.lock();
-		// On regarde si une configuration correspondant à la manette existe (même nom, nb touches, nb axe et nb direction)
-		// Si oui, on map en suivant cette configuration
-		// Sinon on fait une configuration de base
-		//else
-		{
-			// Touches directionnelles : se déplacer dans les menus
-			for(int i=1; i<=m->nbDirection*2; i+=2)
-			{
-				this->lock.unlock();
-				Touche* t = this->getTouche(m->id, i+1, TYPE_TOUCHE_DIRECTION);
-				this->lock.lock();
-				if(t != nullptr && this->touchesJeu[TOUCHE_HAUT_BAS] != nullptr)
-					this->touchesJeu[TOUCHE_HAUT_BAS]->addTouche(t);
-				this->lock.unlock();
-				t = this->getTouche(m->id, i, TYPE_TOUCHE_DIRECTION);
-				this->lock.lock();
-				if(t != nullptr && this->touchesJeu[TOUCHE_GAUCHE_DROITE] != nullptr)
-					this->touchesJeu[TOUCHE_GAUCHE_DROITE]->addTouche(t);
-			}
-		}
-		this->lock.unlock();
+
 	}
+	this->lock.unlock();
 }
 
-Manette* Controller::getController(unsigned int noC)
+Manette* Controller::getController(int noC)
 {
 	Manette* ret = nullptr;
 	this->lock.lock();
@@ -666,18 +670,29 @@ void Controller::listen(Touche* t)
 {
 	this->lock.lock();
 	this->toucheEcoutee = t;
+	this->toucheEcoutee->setInversion(false);
 	this->lock.unlock();
+}
+
+Touche* Controller::getListened(){
+	Touche* t;
+	this->lock.lock();
+	t = this->toucheEcoutee;
+	this->lock.unlock();
+	return t;
+}
+
+void Controller::removeListen(){
+	this->listen(nullptr);
 }
 
 void Controller::tailleFenetre(int x, int y)
 {
-	this->lock.lock();
 	// On met à jour les axes X/Y
 	Touche* t = this->getTouche(-2, 1, TYPE_TOUCHE_JOYSTIC); // Pointeur x
-	t->setValeurs(0, x);
+	t->setValeursBrut(0, x);
 	t = this->getTouche(-2, 2, TYPE_TOUCHE_JOYSTIC); // Pointeur y
-	t->setValeurs(0, y);
-	this->lock.unlock();
+	t->setValeursBrut(0, y);
 }
 
 std::string Controller::intToString(int i) {

@@ -4,12 +4,14 @@
 #include <Bouton.h>
 #include <Manette.h>
 #include <Touche.h>
+#include <ToucheJeu.h>
+#include <Menu.h>
 #include <defs.h>
 
 class Affichage
 {
 	public:
-		Affichage(std::string name, std::string path);
+		Affichage(std::string name, std::string path, ToucheJeu** touchesJeu);
 		virtual ~Affichage();
 		void modePleinEcran(bool pleinEcran = true, int* x = nullptr, int* y = nullptr);
 		void update();
@@ -20,18 +22,37 @@ class Affichage
 		// Retourne le nombre de ticks depuis le lancement du jeu
 		// Si un nombre de ticks est indiqué, retourne le nombre de ticks écoulés depuis la référence donnée
 		unsigned int nbTicks(unsigned int t = 0);
+		/**
+		 * Retourne le bouton pointé par son numéro (son emplacement dans "boutons")
+		 * @param  noBouton numéro du bouton
+		 * @return          Bouton s'il y en a un, nullptr sinon
+		 */
+		Bouton* getBouton(int noBouton);
+		/**
+		 * Change l'écran à afficher dans le jeu
+		 * @param ecran nouvel écran à afficher
+		 */
 		void setEcran(int ecran);
+		/**
+		 * Certains écrans créent un menu. Il est récupérable ici
+		 */
+		Menu* getMenu();
 		/**
 		 * Affiche un écran de chargement avec une barre de progression
 		 * Lorsqu'un pourcentage est spécifié, actualise les valeurs
 		 */
 		void afficherEcranChargement(int pourcentage = -1, std::string message = "");
-		void afficherMenuConfigTouches1(int categorie = -1, int xReference = -1, int opacite = 255);
-		void afficherMenuConfigTouches2(int noToucheJeu = -1, int xReference = -1, int opacite = 255);
-		void afficherMenuConfigTouches3(int nbController = -1, int noController = -3, int xReference = -1, int opacite = 255);
-		void afficherMenuConfigTouches4(std::vector<Touche*>* t = nullptr, int noTouche = -1, int xReference = -1, int opacite = 255);
-		void afficherInfoConfigurationTouches1(std::string nom = "", std::string string = "");
-		void afficherInfoConfigurationTouches2(Touche* t = nullptr);
+		/**
+		 * Affiche toutes les touchesJeu possibles, en les catégorisant.
+		 * Les catégories sont en haut en ligne, les touches sont en colonne sous chaque catégorie
+		 * @param categorieSelectionnee Colonne actuellement sélectionnée, les autres sont transparents à x%
+		 * @param noToucheJeu           Touche actuellement sélectionné, plus gros que les autres boutons
+		 * @param xReference            Position X du tableau, de -255 à 255. -255 veut dire que le bouton le plus à gauche se trouve au millieu, 255 veut dire que le bouton le plus à droite est au millieu
+		 * @param yReference            Position Y du tableau
+		 * @param opacite               Opacité du tableau
+		 */
+		void afficherMenuConfigTouchesSelectionTouche(int categorieSelectionnee = -1, int noToucheJeu = -1, int xReference = -1, int yReference = -1, int opacite = 255);
+		void afficherInfoConfigTouchesCategories(std::string nom = "", std::string string = "");
 		static std::string intToString(int i);
 
 	protected:
@@ -40,6 +61,8 @@ class Affichage
 		std::string path; // Chemin d'accès aux fichiers
 		SDL_Window* pWindow = nullptr; // Fenêtre principale
 		SDL_Renderer* renderer = nullptr; // Rendu de la fenêtre principale
+		ToucheJeu** touchesJeu; // Ensemble des touches du jeu (pour les menuss)
+		std::vector<Bouton*> boutons; // Ensemble des boutons
 
 		// Ecran chargement
 		SDL_Surface* fond_surface = nullptr; // Surface du fond de l'écran
@@ -58,35 +81,11 @@ class Affichage
 		TTF_Font* policeMenu = nullptr; // Police d'écriture sur les écrans de menu
 
 		// Ecran config touches 1
-		std::vector<Bouton*> configTouches1Boutons; // Ensemble des boutons de catégorie
 		int configTouches1Categorie = 0; // Ligne (catégorie) actuelle
 		int configTouches1CategorieD = 0; // Ligne (catégorie) à atteindre
 		int configTouchesNbTicksAnimation = 0; // Nombre de ticks actuels pour l'animation
 		std::string configTouchesNom = ""; // Nom du bouton actuellement sélectionné
 		std::string configTouchesDescription = ""; // Description du bouton actuellement sélectionné
-
-		// Ecran config touches 2
-		std::vector<Bouton*> configTouches2Boutons; // Ensemble des boutons jeu
-		int configTouches2noToucheJeu = 0; // Ligne (noToucheJeu) actuelle
-		int configTouches2noToucheJeuD = 0; // Ligne (noToucheJeu) à atteindre
-
-		// Ecran config touches 3
-		std::vector<Bouton*> configTouches3Boutons; // Ensemble des boutons manette
-		int configTouches3nbController = 0; // Nombre de manettes
-		int configTouches3noController = 0; // Ligne (noToucheJeu) actuelle
-		int configTouches3noControllerD = 0; // Ligne (noToucheJeu) à atteindre
-
-		// Ecran config touches 4
-		std::vector<Bouton*> configTouches4Boutons; // Ensemble des boutons jeu
-		SDL_Surface* configTouches4SurfaceBouton = nullptr; // Surface du bouton
-		SDL_Surface* configTouches4SurfaceAxe = nullptr; // Surface de l'axe
-		SDL_Surface* configTouches4SurfaceCroix = nullptr; // Surface de la croix directionnelle
-		SDL_Surface* configTouches4SurfaceMolette = nullptr; // Surface de la molette
-		SDL_Surface* configTouches4SurfaceNew = nullptr; // Surface de la molette
-		int configTouches4noTouche = 0; // Ligne (noToucheJeu) actuelle
-		int configTouches4noToucheD = 0; // Ligne (noToucheJeu) à atteindre
-		std::vector<Touche*>* configTouches4noController = nullptr; // Ancien contrôleur sélectionné
-		Touche* configTouchesManette = nullptr; // Description du bouton actuellement sélectionné
 
 		// Autre
 		unsigned int nbTicksDebutTransition = 0; // Référence de début de la transition
@@ -96,9 +95,13 @@ class Affichage
 		std::mutex lock; // Mutex de gestion d'accès à l'objet
 		std::mutex lockAff; // Mutex de gestion d'accès à l'objet "modeAffichage"
 		std::mutex lockTick; // Mutex de gestion d'accès à l'objet "nbT"
+		Menu* menu = nullptr; // Menu actuellement affiché, si besoin
+		Menu** menus = nullptr; // Ensemble des menus possibles, ils seront créés à l'init
+		int ecran = 0; // Ecran actuel
 
 		int modeAffichage = 0; // Indique quel type d'écran on affiche (menu, chargement...)
 		bool pleinEcran = false; // Indique si la fenêtre est en plein écran (fenêtré sans bordure)
+		int tailleRef = 1; // Indique la taille de référence pour l'affichage
 };
 
 #endif // AFFICHAGE_H

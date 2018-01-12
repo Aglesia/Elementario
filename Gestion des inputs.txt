@@ -1,0 +1,97 @@
+Les inputs virtuels sont rangés en catégories.
+Il est possible de contrôler qu'une catégorie à la fois, à part pour la catégorie persistante (ex : bouton quitter).
+En jeu, selon les actions effectuées, le programme va afficher des fenêtres et changer la catégorie actuelle. Les inputs des autres catégories sont alors désactivées.
+Chaque touche virtuelle a une liste de de touches réelles, avec ses propres configurations.
+à chaque activation d'une catégorie, la valeur de toutes ses touches virtuelles sont remises à leurs valeurs par défaut.
+Une touche virtuelle peut correspondre à un ensemble de touches rélles. exemple : la sélection angulaire a besoin de l'axe X ET de l'axe Y.
+Lorsqu'une touche est pressée/qu'un input physique a changé, on l'envoie au bundle de touches actuel. Ce bundle vérifie qu'une telle touche est interceptée, et la traite. Sinon, le bundle retourne la touche, qui part dans le bundle persistant.
+
+
+
+
+Actions possibles :
+	- navigation (menus/fenêtres de sélection)
+		- liste axe haut/bas : (min=-255; max=255; def=0)
+			- molette : monte/descend la liste | config : nb crans réel compte comme un cran en jeu
+			- axe : monte/descend la liste | config : vitesse de défilement & valeurs min/max de l'axe
+			- bouton+pointeur : si bouton appuyé, prend en compte le pointeur (déplacement absolu) et inhibite la touche jusqu'à relâchement (si pointeur bouge) | config : % avant activation pointeur & inversion bouton
+			- bouton+axe : si bouton appuyé, prend en compte l'axe (déplacement relatif) et inhibite la touche jusqu'à relâchement (si axe bouge) | config : min/max axe, inversion axe, % avant activation axe & inversion bouton
+		- sélection axe haut/bas : (min=-255; max=255; def=0)
+			- axe : % de l'écran, en vertical | config : min/max de l'axe
+			- pointeur : c'est un axe, sans possibilité de configurer le min/max | config : aucune
+		- sélection haut/bas : (min=-1; max=1; def=0)
+			- touche : sélectionne le bouton suivant (bas)/précédent (haut) et centre verticalement la liste sur cette sélection | config : inversion de la valeur du bouton
+		- liste axe gauche/droite : (min=-255; max=255; def=0)
+			- molette : déplace horizontalement la liste | config : nb crans réel compte comme un cran en jeu
+			- axe : déplace horizontalement la liste | config : vitesse de défilement & valeurs min/max de l'axe
+			- bouton+pointeur : si bouton appuyé, prend en compte le pointeur (déplacement absolu) et inhibite la touche jusqu'à relâchement (si pointeur bouge) | config : % avant activation pointeur & inversion bouton
+			- bouton+axe : si bouton appuyé, prend en compte l'axe (déplacement relatif) et inhibite la touche jusqu'à relâchement (si axe bouge) | config : min/max axe, inversion axe, % avant activation axe & inversion bouton
+		- sélection axe gauche/droite : (min=-255; max=255; def=0)
+			- axe : % de l'écran, en horizontal | config : min/max de l'axe
+			- pointeur : c'est un axe, sans possibilité de configurer le min/max | config : aucune
+		- sélection gauche/droite : (min=-1; max=1; def=0)
+			- touche : sélectionne le bouton suivant (droite)/précédent (gauche) et centre horizontalement la liste sur cette sélection | config : inversion de la valeur du bouton
+		- valider : (min=0; max=1; def=0)
+			- axe : valide la sélection lorsque valeur > x | config : x & inverser le sens (>/<)
+			- touche : valide la sélection lorsqu'appuyé | config : inversion de la valeur du bouton
+		- annuler/retour : (min=0; max=1; def=0)
+			- axe : Reviens à l'écran précédent lorsque valeur > x | config : x & inverser le sens (>/<)
+			- touche : Reviens à l'écran précédent lorsqu'appuyé | config : inversion de la valeur du bouton
+		- paramètres/avancé : (min=0; max=1; def=0)
+			- axe : accède à des options lorsque valeur > x | config : x & inverser le sens (>/<)
+			- touche : accède à des options lorsqu'appuyé | config : inversion de la valeur du bouton
+
+	- sélection angulaire (choix attaque par exemple)
+		- sélection axe X & Y : (min=0; max=360; def=0) // 0 = centre, 360 = 0° & 360°
+			- axe : axe X ou axe Y, il en faut 2 différents | config : (global) % en dehors du centre pour sélectionner, (pour chaque axe) min/max
+			- pointeur : c'est un axe, le min/max ne peut pas changer et le centre est définit selon le % de la taille du centre du menu de sélection | config : aucune
+		- sélection bouton : (min=-1; max=1; def=0)
+			- bouton : Sélection suivant (sens des aiguilles d'une montre)/précédent (sens inverse) | config : sens, inversion de la valeur du bouton
+		- valider : (min=0; max=1; def=0)
+			- bouton : valide le choix que l'ont a fait | config : inversion de la valeur du bouton
+			- axe : valide le choix que l'ont a fait lorsque valeur > x | config : x & inverser le sens (>/<)
+		- retour : (min=0; max=1; def=0)
+			- bouton : retourne à la page précédente | config : inversion de la valeur du bouton
+			- axe : retourne à la page précédente lorsque valeur > x | config : x & inverser le sens (>/<)
+		- infos : (min=0; max=1; def=0)
+			- bouton : affiche les infos de l'item | config : inversion de la valeur du bouton
+			- axe : affiche les infos de l'item lorsque valeur > x | config : x & inverser le sens (>/<)
+
+	- plateau (toutes les actions possibles sur l'écran du plateau)
+		- menu : (min=0; max=1: def=0)
+			- bouton : bouton d'accès au menu | config : inversion de la valeur du bouton
+			- axe : accès au menu lorsque valeur > x | config : x & inverser le sens (>/<)
+		- déplacer plateau axe X : (min=-255; max=255; def=0)
+			- axe : déplace le plateau horizontalement de manière relative | config : inverser axe, % zone morte & min/max
+			- axe absolue : déplace le plateau horizontalement de manière absolue | config : inverser axe, % zone morte & min/max
+			- bouton : déplace le plateau horizontalement de x% | config : sens, x & inversion de la valeur du bouton
+			- bouton+axe : si bouton appuyé, prend en compte l'axe (déplacement relatif) et inhibite la touche jusqu'à relâchement (si axe bouge) | config : min/max axe, inversion axe, % avant activation axe & inversion bouton
+			- bouton+pointeur : si bouton appuyé, prend en compte le pointeur (déplacement absolu) et inhibite la touche jusqu'à relâchement (si pointeur bouge) | config : % avant activation pointeur & inversion bouton
+		- déplacer plateau axe Y : (min=-255; max=255; def=0)
+			- axe : déplace le plateau verticalement de manière relative | config : inverser axe, % zone morte & min/max
+			- axe absolue : déplace le plateau verticalement de manière absolue | config : inverser axe, % zone morte & min/max
+			- bouton : déplace le plateau verticalement de x% | config : sens, x & inversion de la valeur du bouton
+			- bouton+axe : si bouton appuyé, prend en compte l'axe (déplacement relatif) et inhibite la touche jusqu'à relâchement (si axe bouge) | config : min/max axe, inversion axe, % avant activation axe & inversion bouton
+			- bouton+pointeur : si bouton appuyé, prend en compte le pointeur (déplacement absolu) et inhibite la touche jusqu'à relâchement (si pointeur bouge) | config : % avant activation pointeur & inversion bouton
+		- sélectionner case bouton haut/bas : (min=-1; max=1; def=0)
+			- bouton : sélectionne la case précédente (haut)/suivante (bas) | config : sens, inversion valeur bouton
+		- sélectionner case axe haut/bas : (min=-255; max=255; def=0)
+			- axe : simule un axe du pointeur, et sélectionne la case désignée par la nouvelle valeur | config : min/max & inversion de l'axe
+			- pointeur : sélectionne la case désignée par le nouvel emplacement | config : aucune
+		- sélectionner case bouton gauche/droite : (min=-1; max=1; def=0)
+			- bouton : sélectionne la case précédente (gauche)/suivante (droite) | config : sens, inversion valeur bouton
+		- sélectionner case axe gauche/droite : (min=-255; max=255; def=0)
+			- axe : simule un axe du pointeur, et sélectionne la case désignée par la nouvelle valeur | config : min/max & inversion de l'axe
+			- pointeur : sélectionne la case désignée par le nouvel emplacement | config : aucune
+		- valider case : (min=0; max=1; def=0)
+			- bouton : sélectionne la case actuellement sélectionnée, puis affiche les actions possibles sous forme de sélection angulaire | config : inversion de la valeur du bouton
+			- axe : idem, lorsque valeur > x | config : x & inverser le sens (>/<)
+		- zoom plateau : (min=-255; max=255; def=0)
+			- bouton : (dé)zoom de x% | config : x & inversion valeur bouton
+			- axe : (dé)zoom de manière relative | config : inverser axe, min/max & zone morte
+
+	- touches persistantes (toutes les touches qui n'on pas d'écran particulier)
+		- quitter : (min=0; max=1; def=0)
+			-bouton : Quitte le jeu | config : inversion valeur bouton
+		- plein écran : (min=0; max=1; def=0)
+			-bouton : Change le mode d'affichage de la fenêtre | config : inversion valeur bouton

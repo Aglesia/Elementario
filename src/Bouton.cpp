@@ -1,10 +1,21 @@
 #include <Bouton.h>
 
-Bouton::Bouton(SDL_Surface* boutonSurface, SDL_Renderer* renderer, int taille)
+Bouton::Bouton(SDL_Surface* boutonSurface, SDL_Renderer* renderer, int taille, std::string nom, std::string description)
 {
 	this->boutonSurface = boutonSurface;
 	this->renderer = renderer;
 	this->taille = taille;
+	this->nom = nom;
+	this->description = description;
+}
+
+Bouton::Bouton(SDL_Texture* boutonTexture, SDL_Renderer* renderer, int taille, std::string nom, std::string description)
+{
+	this->boutonTexture = boutonTexture;
+	this->renderer = renderer;
+	this->taille = taille;
+	this->nom = nom;
+	this->description = description;
 }
 
 Bouton::~Bouton()
@@ -26,6 +37,7 @@ void Bouton::init()
 {
 	if(this->boutonSurface)
 		this->boutonTexture = SDL_CreateTextureFromSurface(this->renderer, this->boutonSurface);
+	// TODO : On crée le texte selon le nom du bouton
 }
 
 /**
@@ -101,22 +113,29 @@ void Bouton::afficher(SDL_Rect* p, unsigned int nbTicks, bool etatSelection, int
 	SDL_RenderCopy(this->renderer, this->boutonTexture, nullptr, &pos);
 }
 
-/**
- * Définit le texte à afficher sous le bouton
- * @param texte texte
- */
-void Bouton::setTitre(std::string texte) // TODO
+std::string Bouton::getNom()
 {
-	// On vide la texture
-	if(this->texteTexture)
-		SDL_DestroyTexture(this->texteTexture);
+	return this->nom;
+}
 
-	// On crée le nouveau texte
+std::string Bouton::getDescription()
+{
+	return this->description;
+}
+
+void Bouton::setNom(std::string nom)
+{
+	this->nom = nom;
+}
+
+void Bouton::setDescription(std::string description)
+{
+	this->description = description;
 }
 
 /**
- * Définit le texte à afficher sous le bouton
- * @param texte texte
+ * Modifie la taille de référence du bouton (zoom)
+ * @param taille Taille
  */
 void Bouton::setTaille(int taille)
 {

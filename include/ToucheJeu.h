@@ -7,25 +7,27 @@
 class ToucheJeu
 {
 	public:
-		ToucheJeu(std::string nom);
+		ToucheJeu(std::string nom, std::string description, int valeurDefaut=0, int min=-PRECISION_VALEUR_AXE_TOUCHE, int max=PRECISION_VALEUR_AXE_TOUCHE);
 		virtual ~ToucheJeu();
-		void nouvelEvenement(Touche* touche);
-		void activer(bool actif = true);
-		int getVal(bool boolean = false);
-		void addTouche(Touche* touche);
-		void removeTouche(Touche* touche);
-		bool touchePresente(Touche* touche);
-		void setVal(int axe, bool boolean = false);
-
-	protected:
+		int getVal();
+		void setVal(int axe);
+		void setEvent();
+		bool isEvent();
+		void setDefaut();
+		int getValeurMin();
+		int getValeurMax();
+		std::string getNom();
+		std::string getDescription();
 
 	private:
-		std::mutex mutex; // Accès partégée
+		std::mutex mutex; // Accès partagée
 		std::string nom; // Nom de la touche en jeu
-		bool actif = false; // Indique si cette touche-jeu est active
-		int valeurAxe = 0;
-		bool valeurBool = 0;
-		std::vector<Touche*> touches; // Ensemble des touches modifiant les propriétés de cette toucheJeu
+		std::string description; // Nom de la touche en jeu
+		int valeurAxe; // Valeur actuelle de l'axe
+		int def; // Valeur par défaut de la touche
+		int min; // Valeur minimum de la touche
+		int max; // Valeur maximum de la touche
+		bool event = false; // Indique si un évènement est apparu depuis la dernière fois
 };
 
 #endif

@@ -20,7 +20,6 @@ bool Touche::isTouche(int noManette, int noTouche, int typeTouche)
 	return ret;
 }
 
-
 /**
  * Retourne la valeur actuelle de l'axe
  * Si le bouton est une molette, remet sa valeur à 0
@@ -36,71 +35,41 @@ int Touche::getValAxe()
 	return ret;
 }
 
-int Touche::getValBrutAxe()
-{
-	this->lock.lock();
-	int ret = this->valeurBrut;
-	this->lock.unlock();
-	return ret;
-}
-
-/**
- * Indique si la touche est considérée comme pressée
- * Si la touche est une touche directionnelle, demande la direction
- * @return touche pressée
- */
-bool Touche::isPressed(int direction)
-{
-	// Selon le sens
-	this->lock.lock();
-	bool ret = (!this->inverserClic && this->valeur >= this->valClic ||
-				this->inverserClic && this->valeur <= this->valClic);
-	this->lock.unlock();
-	return ret;
-}
-
 /**
  * Prend la nouvelle valeur brut de l'axe, et la transforme en une valeur entre -100 et 100
  * Si le bouton est une molette, ajoute la valeur au lieu de l'écraser
  * @param valeurBrut Valeur brut de l'axe
- * @param ignoreInversion Ignore l'inversion à effectuer sur l'axe. Ne devrait pas être utilisé (à part par setPressed()) !!
+ * @param ignoreInversion Ignore l'inversion à effectuer sur l'axe
  */
 void Touche::setValAxe(int valeurBrut, bool ignoreInversion)
 {
 	this->lock.lock();
-	this->valeurBrut = valeurBrut;
 	// Si c'est en dehors des limites, on le met aux limites
-	if(valeurBrut<this->min)
-		valeurBrut = this->min;
-	if(valeurBrut>this->max)
-		valeurBrut = this->max;
+	if(valeurBrut<this->minBrut)
+		valeurBrut = this->minBrut;
+	if(valeurBrut>this->maxBrut)
+		valeurBrut = this->maxBrut;
 
 	// On calcul la nouvelle valeur
 	if(this->typeTouche != TYPE_TOUCHE_MOLETTE)
-		this->valeur = (((valeurBrut-this->min)*PRECISION_VALEUR_AXE_TOUCHE)/(this->max-this->min))-(PRECISION_VALEUR_AXE_TOUCHE/2);
+		this->valeur = (((valeurBrut-this->minBrut)*(this->max-this->min))/(this->maxBrut-this->minBrut))+this->min;
 	else
 	{
-		this->valeur += (((valeurBrut-this->min)*PRECISION_VALEUR_AXE_TOUCHE)/(this->max-this->min))-(PRECISION_VALEUR_AXE_TOUCHE/2);
-		if(this->valeur > PRECISION_VALEUR_AXE_TOUCHE/2)
-			this->valeur = PRECISION_VALEUR_AXE_TOUCHE/2;
-		if(this->valeur*-1 > PRECISION_VALEUR_AXE_TOUCHE/2)
-			this->valeur = (PRECISION_VALEUR_AXE_TOUCHE/2)*-1;
+		this->valeur += (((valeurBrut-this->minBrut)*(this->max-this->min))/(this->maxBrut-this->minBrut))+this->min;
+		if(this->valeur > (this->max+this->min)/2)
+			this->valeur = (this->max+this->min)/2;
+		if(this->valeur*-1 > (this->max+this->min)/2)
+			this->valeur = ((this->max+this->min)/2)*-1;
 	}
 
 	// On inverse si besoin
-	if(this->inverserAxe && !ignoreInversion)
-		this->valeur *= -1;
+	if(this->inversion && !ignoreInversion)
+	{
+		int val = this->valeur - this->min;
+		this->valeur = this->max - val;
+	}
 
-	SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "val %s : %d\n", this->nom.c_str(), this->valeur);
-	this->lock.unlock();
-}
-
-
-void Touche::setPressed(bool pressed)
-{
-	this->lock.lock();
-	this->valeur = (pressed)?this->valClic:this->valUnclic;
-	SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "val %s : %d\n", this->nom.c_str(), this->valeur);
+	SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "val %s : %d (brut=%d, min/max=%d/%d)", this->nom.c_str(), this->valeur, valeurBrut, this->minBrut, this->maxBrut);
 	this->lock.unlock();
 }
 
@@ -109,19 +78,18 @@ void Touche::setPressed(bool pressed)
  * @param clic Si inversé, est appuyé lorsque le bouton est relâché
  * @param axe  Si inversé, bascule de -100 -> 100 à 100 -> -100
  */
-void Touche::setInversion(bool clic, bool axe)
+void Touche::setInversion(bool inversion)
 {
 	this->lock.lock();
-	this->inverserClic = clic;
-	this->inverserAxe = axe;
+	this->inversion = inversion;
 	this->lock.unlock();
 }
 
 /**
- * Définit les limites haute et basse de l'axe, pour la valeur brut
+ * Définit les limites haute et basse de l'axe, pour la valeur logiques
  * Inverse l'axe si besoin
- * @param min Valeur minimum brut
- * @param max Valeur maximum brut
+ * @param min Valeur minimum logique
+ * @param max Valeur maximum logique
  */
 void Touche::setValeurs(int min, int max)
 {
@@ -130,53 +98,46 @@ void Touche::setValeurs(int min, int max)
 	{
 		this->min = min;
 		this->max = max;
-		this->inverserAxe = false;
+		this->inversion = false;
 	}
 	else
 	{
 		this->min = max;
 		this->max = min;
-		this->inverserAxe = true;
+		this->inversion = true;
 	}
 	this->lock.unlock();
 }
 
 /**
- * Définit les valeurs à prendre lors d'un appuie/relâchement booléen
- * Détermine en même temps la valeur de l'axe à laquelle on considère comme appuyé
- * Inverse automatiquement le clic si besoin
- * @param clic   Valeur lors d'un appuie / Valeur limite entre considération d'appuie/relâchement
- * @param unclic Valeur lors d'un relâchement
+ * Définit les limites haute et basse de l'axe, pour la valeur brut
+ * @param min Valeur minimum brut
+ * @param max Valeur maximum brut
  */
-void Touche::setValeursClic(int clic, int unclic)
+void Touche::setValeursBrut(int min, int max)
 {
 	this->lock.lock();
-	this->valClic = clic;
-	this->valUnclic = unclic;
-	this->inverserClic = (clic < unclic);
+	if(max > min)
+	{
+		this->minBrut = min;
+		this->maxBrut = max;
+	}
+	else
+	{
+		this->minBrut = max;
+		this->maxBrut = min;
+	}
 	this->lock.unlock();
 }
 
-
-bool Touche::getInversionClic()
-{
-	bool ret;
-	this->lock.lock();
-	ret = this->inverserClic;
-	this->lock.unlock();
-	return ret;
-}
-
-
-bool Touche::getInversionAxe()
+bool Touche::getInversion()
 {
 	bool ret;
 	this->lock.lock();
-	ret = this->inverserAxe;
+	ret = this->inversion;
 	this->lock.unlock();
 	return ret;
 }
-
 
 int Touche::getValeurMin()
 {
@@ -187,22 +148,11 @@ int Touche::getValeurMin()
 	return ret;
 }
 
-
 int Touche::getValeurMax()
 {
 	int ret;
 	this->lock.lock();
 	ret = this->max;
-	this->lock.unlock();
-	return ret;
-}
-
-
-int Touche::getValeurClic()
-{
-	int ret;
-	this->lock.lock();
-	ret = this->valClic;
 	this->lock.unlock();
 	return ret;
 }
@@ -256,4 +206,27 @@ int Touche::setType(int typeTouche)
 	this->lock.lock();
 	this->typeTouche = typeTouche;
 	this->lock.unlock();
+}
+
+void Touche::activer()
+{
+	this->lock.lock();
+	this->desactive = false;
+	this->lock.unlock();
+}
+
+void Touche::desactiver()
+{
+	this->lock.lock();
+	this->desactive = true;
+	this->lock.unlock();
+}
+
+bool Touche::actif()
+{
+	bool ret;
+	this->lock.lock();
+	ret = !this->desactive;
+	this->lock.unlock();
+	return ret;
 }

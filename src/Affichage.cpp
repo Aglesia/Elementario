@@ -1,8 +1,9 @@
 #include "Affichage.h"
 
-Affichage::Affichage(std::string name, std::string path)
+Affichage::Affichage(std::string name, std::string path, ToucheJeu** touchesJeu)
 {
 	this->path = path;
+	this->touchesJeu = touchesJeu;
 
 	// On crée la fenêtre
 	this->pWindow = SDL_CreateWindow(name.c_str(),
@@ -31,7 +32,7 @@ Affichage::Affichage(std::string name, std::string path)
 	this->dernierTempsTick = SDL_GetTicks();
 }
 
-Affichage::~Affichage() // TODO : vider toutes les textures
+Affichage::~Affichage() // TODO : vider toutes les textures/surfaces
 {
 	this->lock.lock();
 
@@ -54,16 +55,10 @@ Affichage::~Affichage() // TODO : vider toutes les textures
 		SDL_FreeSurface(this->fond_surface);
 	if(this->barreChargement_surface)
 		SDL_FreeSurface(this->barreChargement_surface);
-	if(this->configTouches4SurfaceBouton)
-		SDL_FreeSurface(this->configTouches4SurfaceBouton);
-	if(this->configTouches4SurfaceAxe)
-		SDL_FreeSurface(this->configTouches4SurfaceAxe);
-	if(this->configTouches4SurfaceCroix)
-		SDL_FreeSurface(this->configTouches4SurfaceCroix);
-	if(this->configTouches4SurfaceMolette)
-		SDL_FreeSurface(this->configTouches4SurfaceMolette);
-	if(this->configTouches4SurfaceNew)
-		SDL_FreeSurface(this->configTouches4SurfaceNew);
+
+	//On détruit les boutons
+    for(int i=0; i<this->boutons.size(); i++)
+        delete this->boutons[i];
 
 	// On détruit le renderer
 	if(this->renderer)
@@ -118,7 +113,6 @@ void Affichage::update()
 	// Si le fond est chargé, on l'affiche
 	if(this->fond_surface != nullptr)
 	{
-		// TODO : A CHANGER DE PLACE
 		if(this->fond == nullptr)
 			// Conversion de la surface en texture
 			this->fond = SDL_CreateTextureFromSurface(this->renderer, this->fond_surface);
@@ -159,219 +153,8 @@ void Affichage::update()
 			this->afficherEcranChargement();
 			break;
 
-		case MODE_AFFICHAGE_CONFIG_TOUCHES1:
-			this->afficherMenuConfigTouches1();
-			this->afficherInfoConfigurationTouches1();
-			break;
-
-		case MODE_AFFICHAGE_CONFIG_TOUCHES2:
-			{
-				int xRef;
-				int yRef;
-				SDL_GetWindowSize(this->pWindow, &xRef, &yRef);
-				xRef = ((xRef*2)/3) - (TAILLE_ICONE_CONFIG_TOUCHE*(1.2+NIVEAU_ZOOM_BOUTON_ACTIF));
-				this->afficherMenuConfigTouches1(-1, xRef);
-				this->afficherMenuConfigTouches2();
-				this->afficherInfoConfigurationTouches1();
-			}
-			break;
-
-		case MODE_AFFICHAGE_CONFIG_TOUCHES3:
-			{
-				int xRef;
-				int yRef;
-				SDL_GetWindowSize(this->pWindow, &xRef, &yRef);
-				xRef = ((xRef*2)/3) - (TAILLE_ICONE_CONFIG_TOUCHE*(1.2+NIVEAU_ZOOM_BOUTON_ACTIF));
-				this->afficherMenuConfigTouches2(-1, xRef);
-				xRef -= (TAILLE_ICONE_CONFIG_TOUCHE*(1.2+NIVEAU_ZOOM_BOUTON_ACTIF));
-				this->afficherMenuConfigTouches1(-1, xRef);
-				this->afficherMenuConfigTouches3();
-				this->afficherInfoConfigurationTouches1();
-			}
-			break;
-
-		case MODE_AFFICHAGE_CONFIG_TOUCHES4:
-			{
-				int xRef;
-				int yRef;
-				SDL_GetWindowSize(this->pWindow, &xRef, &yRef);
-				xRef = ((xRef*2)/3) - (TAILLE_ICONE_CONFIG_TOUCHE*(1.2+NIVEAU_ZOOM_BOUTON_ACTIF));
-				this->afficherMenuConfigTouches3(-1, -1, xRef);
-				xRef -= (TAILLE_ICONE_CONFIG_TOUCHE*(1.2+NIVEAU_ZOOM_BOUTON_ACTIF));
-				this->afficherMenuConfigTouches2(-1, xRef);
-				xRef -= (TAILLE_ICONE_CONFIG_TOUCHE*(1.2+NIVEAU_ZOOM_BOUTON_ACTIF));
-				this->afficherMenuConfigTouches1(-1, xRef);
-				this->afficherMenuConfigTouches4();
-				this->afficherInfoConfigurationTouches2();
-			}
-			break;
-
-		case MODE_TRANSITION_CONFIG_TOUCHES12:
-			{
-				int nbT = nbTicks(this->nbTicksDebutTransition);
-				// Si c'est la fin de la transition
-				if(nbT>=NB_TICKS_DEPLACEMENT_ECRAN)
-				{
-					nbT = NB_TICKS_DEPLACEMENT_ECRAN;
-					this->modeAffichage = MODE_AFFICHAGE_CONFIG_TOUCHES2;
-				}
-
-				// On décale de x pixels
-				int xRef;
-				int yRef;
-				SDL_GetWindowSize(this->pWindow, &xRef, &yRef);
-				xRef = ((xRef*2)/3)-(((TAILLE_ICONE_CONFIG_TOUCHE*(1.2+NIVEAU_ZOOM_BOUTON_ACTIF))*nbT)/NB_TICKS_DEPLACEMENT_ECRAN);
-
-				// On opacifie de x %
-				int opacite = (255*nbT)/NB_TICKS_DEPLACEMENT_ECRAN;
-
-				// On affiche
-				this->afficherMenuConfigTouches1(-1, xRef);
-				this->afficherMenuConfigTouches2(-1, -1, opacite);
-				this->afficherInfoConfigurationTouches1();
-			}
-			break;
-
-		case MODE_TRANSITION_CONFIG_TOUCHES21:
-			{
-				int nbT = nbTicks(this->nbTicksDebutTransition);
-				// Si c'est la fin de la transition
-				if(nbT>=NB_TICKS_DEPLACEMENT_ECRAN)
-				{
-					nbT = NB_TICKS_DEPLACEMENT_ECRAN;
-					this->modeAffichage = MODE_AFFICHAGE_CONFIG_TOUCHES1;
-				}
-
-				// On décale de x pixels
-				int xRef;
-				int yRef;
-				SDL_GetWindowSize(this->pWindow, &xRef, &yRef);
-				xRef = ((xRef*2)/3)-(((TAILLE_ICONE_CONFIG_TOUCHE*(1.2+NIVEAU_ZOOM_BOUTON_ACTIF))*(NB_TICKS_DEPLACEMENT_ECRAN-nbT))/NB_TICKS_DEPLACEMENT_ECRAN);
-
-				// On opacifie de x %
-				int opacite = (255*(NB_TICKS_DEPLACEMENT_ECRAN-nbT))/NB_TICKS_DEPLACEMENT_ECRAN;
-
-				// On affiche
-				this->afficherMenuConfigTouches1(-1, xRef);
-				this->afficherMenuConfigTouches2(-1, -1, opacite);
-				this->afficherInfoConfigurationTouches1();
-			}
-			break;
-
-		case MODE_TRANSITION_CONFIG_TOUCHES23:
-			{
-				int nbT = nbTicks(this->nbTicksDebutTransition);
-				// Si c'est la fin de la transition
-				if(nbT>=NB_TICKS_DEPLACEMENT_ECRAN)
-				{
-					nbT = NB_TICKS_DEPLACEMENT_ECRAN;
-					this->modeAffichage = MODE_AFFICHAGE_CONFIG_TOUCHES3;
-				}
-
-				// On décale de x pixels
-				int xRef;
-				int yRef;
-				SDL_GetWindowSize(this->pWindow, &xRef, &yRef);
-				xRef = ((xRef*2)/3)-(((TAILLE_ICONE_CONFIG_TOUCHE*(1.2+NIVEAU_ZOOM_BOUTON_ACTIF))*nbT)/NB_TICKS_DEPLACEMENT_ECRAN);
-
-				// On opacifie de x %
-				int opacite = (255*nbT)/NB_TICKS_DEPLACEMENT_ECRAN;
-
-				// On affiche
-				this->afficherMenuConfigTouches2(-1, xRef);
-				xRef -= (TAILLE_ICONE_CONFIG_TOUCHE*(1.2+NIVEAU_ZOOM_BOUTON_ACTIF));
-				this->afficherMenuConfigTouches1(-1, xRef);
-				this->afficherMenuConfigTouches3(-1, -1, -1, opacite);
-				this->afficherInfoConfigurationTouches1();
-			}
-			break;
-
-		case MODE_TRANSITION_CONFIG_TOUCHES32:
-			{
-				int nbT = nbTicks(this->nbTicksDebutTransition);
-				// Si c'est la fin de la transition
-				if(nbT>=NB_TICKS_DEPLACEMENT_ECRAN)
-				{
-					nbT = NB_TICKS_DEPLACEMENT_ECRAN;
-					this->modeAffichage = MODE_AFFICHAGE_CONFIG_TOUCHES2;
-				}
-
-				// On décale de x pixels
-				int xRef;
-				int yRef;
-				SDL_GetWindowSize(this->pWindow, &xRef, &yRef);
-				xRef = ((xRef*2)/3)-(((TAILLE_ICONE_CONFIG_TOUCHE*(1.2+NIVEAU_ZOOM_BOUTON_ACTIF))*(NB_TICKS_DEPLACEMENT_ECRAN-nbT))/NB_TICKS_DEPLACEMENT_ECRAN);
-
-				// On opacifie de x %
-				int opacite = (255*(NB_TICKS_DEPLACEMENT_ECRAN-nbT))/NB_TICKS_DEPLACEMENT_ECRAN;
-
-				// On affiche
-				this->afficherMenuConfigTouches2(-1, xRef);
-				xRef -= (TAILLE_ICONE_CONFIG_TOUCHE*(1.2+NIVEAU_ZOOM_BOUTON_ACTIF));
-				this->afficherMenuConfigTouches1(-1, xRef);
-				this->afficherMenuConfigTouches3(-1, -1, -1, opacite);
-				this->afficherInfoConfigurationTouches1();
-			}
-			break;
-
-		case MODE_TRANSITION_CONFIG_TOUCHES34:
-			{
-				int nbT = nbTicks(this->nbTicksDebutTransition);
-				// Si c'est la fin de la transition
-				if(nbT>=NB_TICKS_DEPLACEMENT_ECRAN)
-				{
-					nbT = NB_TICKS_DEPLACEMENT_ECRAN;
-					this->modeAffichage = MODE_AFFICHAGE_CONFIG_TOUCHES4;
-				}
-
-				// On décale de x pixels
-				int xRef;
-				int yRef;
-				SDL_GetWindowSize(this->pWindow, &xRef, &yRef);
-				xRef = ((xRef*2)/3)-(((TAILLE_ICONE_CONFIG_TOUCHE*(1.2+NIVEAU_ZOOM_BOUTON_ACTIF))*nbT)/NB_TICKS_DEPLACEMENT_ECRAN);
-
-				// On opacifie de x %
-				int opacite = (255*nbT)/NB_TICKS_DEPLACEMENT_ECRAN;
-
-				// On affiche
-				this->afficherMenuConfigTouches3(-1, -1, xRef);
-				xRef -= (TAILLE_ICONE_CONFIG_TOUCHE*(1.2+NIVEAU_ZOOM_BOUTON_ACTIF));
-				this->afficherMenuConfigTouches2(-1, xRef);
-				xRef -= (TAILLE_ICONE_CONFIG_TOUCHE*(1.2+NIVEAU_ZOOM_BOUTON_ACTIF));
-				this->afficherMenuConfigTouches1(-1, xRef);
-				this->afficherMenuConfigTouches4(nullptr, -1, -1, opacite);
-				this->afficherInfoConfigurationTouches2();
-			}
-			break;
-
-		case MODE_TRANSITION_CONFIG_TOUCHES43:
-			{
-				int nbT = nbTicks(this->nbTicksDebutTransition);
-				// Si c'est la fin de la transition
-				if(nbT>=NB_TICKS_DEPLACEMENT_ECRAN)
-				{
-					nbT = NB_TICKS_DEPLACEMENT_ECRAN;
-					this->modeAffichage = MODE_AFFICHAGE_CONFIG_TOUCHES3;
-				}
-
-				// On décale de x pixels
-				int xRef;
-				int yRef;
-				SDL_GetWindowSize(this->pWindow, &xRef, &yRef);
-				xRef = ((xRef*2)/3)-(((TAILLE_ICONE_CONFIG_TOUCHE*(1.2+NIVEAU_ZOOM_BOUTON_ACTIF))*(NB_TICKS_DEPLACEMENT_ECRAN-nbT))/NB_TICKS_DEPLACEMENT_ECRAN);
-
-				// On opacifie de x %
-				int opacite = (255*(NB_TICKS_DEPLACEMENT_ECRAN-nbT))/NB_TICKS_DEPLACEMENT_ECRAN;
-
-				// On affiche
-				this->afficherMenuConfigTouches3(-1, -1, xRef);
-				xRef -= (TAILLE_ICONE_CONFIG_TOUCHE*(1.2+NIVEAU_ZOOM_BOUTON_ACTIF));
-				this->afficherMenuConfigTouches2(-1, xRef);
-				xRef -= (TAILLE_ICONE_CONFIG_TOUCHE*(1.2+NIVEAU_ZOOM_BOUTON_ACTIF));
-				this->afficherMenuConfigTouches1(-1, xRef);
-				this->afficherMenuConfigTouches4(nullptr, -1, -1, opacite);
-				this->afficherInfoConfigurationTouches2();
-			}
+		case MODE_AFFICHAGE_CONFIG_TOUCHES_CATEGORIES:
+			this->menu->update(this->nbTicks());
 			break;
 
 		default:
@@ -379,7 +162,8 @@ void Affichage::update()
 	}
 
 	// Si la police est chargée
-	if(this->policeChargement != nullptr)
+	if(this->policeChargement != nullptr); // TODO : afficher les fps correctement, et uniquement si demandé
+	if(false)
 	{
 		// On crée le texte des fps
 		SDL_Color couleurTexte = {COULEUR_TEXTE_CHARGEMENT_R, COULEUR_TEXTE_CHARGEMENT_G, COULEUR_TEXTE_CHARGEMENT_B};
@@ -416,21 +200,9 @@ void Affichage::update()
 int Affichage::init_main(){
 	int error = 0;
 
-    // Icones des catégories de configuration des touches
-    for(int i=0; i<this->configTouches1Boutons.size(); i++)
-        this->configTouches1Boutons[i]->init();
-
-    // Icones des touches de configuration des touches
-    for(int i=0; i<this->configTouches2Boutons.size(); i++)
-        this->configTouches2Boutons[i]->init();
-
-    // Icones des entrées de configuration des touches
-    for(int i=0; i<this->configTouches3Boutons.size(); i++)
-        this->configTouches3Boutons[i]->init();
-
-    // Icones des types de configuration des touches
-    for(int i=0; i<this->configTouches4Boutons.size(); i++)
-        this->configTouches4Boutons[i]->init();
+    // Icones des boutons
+    for(int i=0; i<this->boutons.size(); i++)
+        this->boutons[i]->init();
 
     return error;
 }
@@ -478,7 +250,7 @@ int Affichage::init() // TODO : Ajouter tous les éléments à charger + image d
 	this->lock.lock();
 	temp2 = this->path;
 	temp2 += POLICE_CHARGEMENT_FILENAME;
-	this->policeChargement = TTF_OpenFont(temp2.c_str(), POLICE_CHARGEMENT_TAILLE);
+	this->policeChargement = TTF_OpenFont(temp2.c_str(), POLICE_CHARGEMENT_TAILLE*this->tailleRef);
 	this->lock.unlock();
 	if(this->policeChargement == nullptr)
 	{
@@ -489,8 +261,8 @@ int Affichage::init() // TODO : Ajouter tous les éléments à charger + image d
 	this->lock.lock();
 	temp2 = this->path;
 	temp2 += POLICE_MENU_FILENAME;
-	this->policeMenu = TTF_OpenFont(temp2.c_str(), POLICE_MENU_TAILLE);
-	this->policeTitreMenu = TTF_OpenFont(temp2.c_str(), POLICE_MENU_TITRE_TAILLE);
+	this->policeMenu = TTF_OpenFont(temp2.c_str(), POLICE_MENU_TAILLE*this->tailleRef);
+	this->policeTitreMenu = TTF_OpenFont(temp2.c_str(), POLICE_MENU_TITRE_TAILLE*this->tailleRef);
 	this->lock.unlock();
 	if(this->policeMenu == nullptr)
 	{
@@ -498,66 +270,252 @@ int Affichage::init() // TODO : Ajouter tous les éléments à charger + image d
 		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,  "Impossible de charger la police de chargement : %s\n", TTF_GetError());
 	}
 
+	// On crée les menus
+	this->menus = new Menu*[NB_MENUS];
+	for(int i=0; i<NB_MENUS; i++)
+		this->menus[i] = new Menu(this->touchesJeu);
+
+	// On met une alerte si le nombre de bundle change (il faut recoder les touches en dur)
+	if(NB_BUNDLE != 4)
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,  "ATTENTION : le nombre de bundle est à changer, dans Affichage::init() !!!");
+
 	// On charge les icônes de configuration des touches
-	for(int i=0; i<CONFIG_TOUCHES_NB_CATEGORIES; i++)
+	// Catégorie persistante
 	{
-		std::string temp = "Chargement de l'icône config_touches_1 (";
-		temp += Affichage::intToString(i);
-		temp += "/";
-		temp += Affichage::intToString(CONFIG_TOUCHES_NB_CATEGORIES);
-		temp += ")";
-		this->afficherEcranChargement(60, temp.c_str());
+		this->afficherEcranChargement(60, "Chargement de l'icône config_touches_catégorie persistante");
 		std::string temp2 = this->path;
 		temp2 += BOUTON_CONFIG_DIRNAME;
-		temp2 += "categorie/";
-		temp2 += Affichage::intToString(i);
-		temp2 += ".";
+		temp2 += "categorie/1.";;
 		temp2 += IMAGE_FORMAT;
-
 		SDL_Surface* fondC = IMG_Load(temp2.c_str());
+
+		std::vector<Bouton*> bts;
+		bts.clear();
+
 		if(fondC)
 		{
-			Bouton* b = new Bouton(fondC, this->renderer, TAILLE_ICONE_CONFIG_TOUCHE);
-			this->lock.lock();
-			this->configTouches1Boutons.push_back(b);
-			this->lock.unlock();
+			Bouton* b = new Bouton(fondC, this->renderer, TAILLE_ICONE_CONFIG_TOUCHE*this->tailleRef, "Catégorie persistante", "Ensemble des touches actionnables partout");
+			bts.push_back(b);
 		}
 		else
 		{
 			error = 3;
 			SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,  "Impossible de charger l'image : %s\n", IMG_GetError());
 		}
+
+		// On charge toutes les icônes de sous-catégorie de la catégorie
+		for(int i=TOUCHE_PLEIN_ECRAN; i<TOUCHE_NAVIGATION_DEPLACER_AXE_HAUT_BAS; i++)
+		{
+			std::string temp = "Chargement de l'icône config_touches (";
+			temp += Affichage::intToString(i);
+			temp += "/";
+			temp += Affichage::intToString(NB_TOUCHES_JEU);
+			temp += ")";
+			this->afficherEcranChargement(61+i, temp.c_str());
+			std::string temp2 = this->path;
+			temp2 += BOUTON_CONFIG_DIRNAME;
+			temp2 += "touche/";
+			temp2 += Affichage::intToString(i);
+			temp2 += ".";
+			temp2 += IMAGE_FORMAT;
+
+			SDL_Surface* fondC = IMG_Load(temp2.c_str());
+			if(fondC)
+			{
+				Bouton* b = new Bouton(fondC, this->renderer, TAILLE_ICONE_CONFIG_TOUCHE*this->tailleRef, this->touchesJeu[i]->getNom(), this->touchesJeu[i]->getDescription());
+				bts.push_back(b);
+				this->lock.lock();
+				this->boutons.push_back(b);
+				this->lock.unlock();
+			}
+			else
+			{
+				error = 3;
+				SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,  "Impossible de charger l'image : %s\n", IMG_GetError());
+			}
+		}
+
+		// On ajoute les boutons au menu
+		this->menus[MENU_CONFIG_TOUCHES_CHOIX_TOUCHE]->ajoutCategorie(bts);
 	}
-	// On charge les icônes de configuration des touches
-	for(int i=0; i<CONFIG_TOUCHES_NB_TOUCHE_JEU; i++)
+
+	// Catégorie navigation
 	{
-		std::string temp = "Chargement de l'icône config_touches_2 (";
-		temp += Affichage::intToString(i);
-		temp += "/";
-		temp += Affichage::intToString(CONFIG_TOUCHES_NB_TOUCHE_JEU);
-		temp += ")";
-		this->afficherEcranChargement(60, temp.c_str());
+		this->afficherEcranChargement(60, "Chargement de l'icône config_touches_catégorie navigation");
 		std::string temp2 = this->path;
 		temp2 += BOUTON_CONFIG_DIRNAME;
-		temp2 += "touche/";
-		temp2 += Affichage::intToString(i);
-		temp2 += ".";
+		temp2 += "categorie/2.";;
 		temp2 += IMAGE_FORMAT;
-
 		SDL_Surface* fondC = IMG_Load(temp2.c_str());
+
+		std::vector<Bouton*> bts;
+		bts.clear();
+
 		if(fondC)
 		{
-			Bouton* b = new Bouton(fondC, this->renderer, TAILLE_ICONE_CONFIG_TOUCHE);
-			this->lock.lock();
-			this->configTouches2Boutons.push_back(b);
-			this->lock.unlock();
+			Bouton* b = new Bouton(fondC, this->renderer, TAILLE_ICONE_CONFIG_TOUCHE*this->tailleRef, "Catégorie navigation", "Toutes les touches gérant la navigation dans les menus");
+			bts.push_back(b);
 		}
 		else
 		{
 			error = 3;
 			SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,  "Impossible de charger l'image : %s\n", IMG_GetError());
 		}
+
+		// On charge toutes les icônes de sous-catégorie de la catégorie
+		for(int i=TOUCHE_NAVIGATION_DEPLACER_AXE_HAUT_BAS; i<TOUCHE_ANGULAIRE_BOUTON_ANGLE; i++)
+		{
+			std::string temp = "Chargement de l'icône config_touches (";
+			temp += Affichage::intToString(i);
+			temp += "/";
+			temp += Affichage::intToString(NB_TOUCHES_JEU);
+			temp += ")";
+			this->afficherEcranChargement(61+i, temp.c_str());
+			std::string temp2 = this->path;
+			temp2 += BOUTON_CONFIG_DIRNAME;
+			temp2 += "touche/";
+			temp2 += Affichage::intToString(i);
+			temp2 += ".";
+			temp2 += IMAGE_FORMAT;
+
+			SDL_Surface* fondC = IMG_Load(temp2.c_str());
+			if(fondC)
+			{
+				Bouton* b = new Bouton(fondC, this->renderer, TAILLE_ICONE_CONFIG_TOUCHE*this->tailleRef, this->touchesJeu[i]->getNom(), this->touchesJeu[i]->getDescription());
+				bts.push_back(b);
+				this->lock.lock();
+				this->boutons.push_back(b);
+				this->lock.unlock();
+			}
+			else
+			{
+				error = 3;
+				SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,  "Impossible de charger l'image : %s\n", IMG_GetError());
+			}
+		}
+
+		// On ajoute les boutons au menu
+		this->menus[MENU_CONFIG_TOUCHES_CHOIX_TOUCHE]->ajoutCategorie(bts);
 	}
+
+	// Catégorie angulaire
+	{
+		this->afficherEcranChargement(60, "Chargement de l'icône config_touches_catégorie sélection angulaire");
+		std::string temp2 = this->path;
+		temp2 += BOUTON_CONFIG_DIRNAME;
+		temp2 += "categorie/3.";;
+		temp2 += IMAGE_FORMAT;
+		SDL_Surface* fondC = IMG_Load(temp2.c_str());
+
+		std::vector<Bouton*> bts;
+		bts.clear();
+
+		if(fondC)
+		{
+			Bouton* b = new Bouton(fondC, this->renderer, TAILLE_ICONE_CONFIG_TOUCHE*this->tailleRef, "Catégorie sélection angulaire", "Toutes les touches gérant la navigation dans les sélections angulaires");
+			bts.push_back(b);
+		}
+		else
+		{
+			error = 3;
+			SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,  "Impossible de charger l'image : %s\n", IMG_GetError());
+		}
+
+		// On charge toutes les icônes de sous-catégorie de la catégorie
+		for(int i=TOUCHE_ANGULAIRE_BOUTON_ANGLE; i<TOUCHE_PLATEAU_MENU; i++)
+		{
+			std::string temp = "Chargement de l'icône config_touches (";
+			temp += Affichage::intToString(i);
+			temp += "/";
+			temp += Affichage::intToString(NB_TOUCHES_JEU);
+			temp += ")";
+			this->afficherEcranChargement(61+i, temp.c_str());
+			std::string temp2 = this->path;
+			temp2 += BOUTON_CONFIG_DIRNAME;
+			temp2 += "touche/";
+			temp2 += Affichage::intToString(i);
+			temp2 += ".";
+			temp2 += IMAGE_FORMAT;
+
+			SDL_Surface* fondC = IMG_Load(temp2.c_str());
+			if(fondC)
+			{
+				Bouton* b = new Bouton(fondC, this->renderer, TAILLE_ICONE_CONFIG_TOUCHE*this->tailleRef, this->touchesJeu[i]->getNom(), this->touchesJeu[i]->getDescription());
+				bts.push_back(b);
+				this->lock.lock();
+				this->boutons.push_back(b);
+				this->lock.unlock();
+			}
+			else
+			{
+				error = 3;
+				SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,  "Impossible de charger l'image : %s\n", IMG_GetError());
+			}
+		}
+
+		// On ajoute les boutons au menu
+		this->menus[MENU_CONFIG_TOUCHES_CHOIX_TOUCHE]->ajoutCategorie(bts);
+	}
+
+	// Catégorie plateau
+	{
+		this->afficherEcranChargement(60, "Chargement de l'icône config_touches_catégorie plateau");
+		std::string temp2 = this->path;
+		temp2 += BOUTON_CONFIG_DIRNAME;
+		temp2 += "categorie/4.";;
+		temp2 += IMAGE_FORMAT;
+		SDL_Surface* fondC = IMG_Load(temp2.c_str());
+
+		std::vector<Bouton*> bts;
+		bts.clear();
+
+		if(fondC)
+		{
+			Bouton* b = new Bouton(fondC, this->renderer, TAILLE_ICONE_CONFIG_TOUCHE*this->tailleRef, "Catégorie plateau", "Toutes les touches utilisables sur l'écran du plateau");
+			bts.push_back(b);
+		}
+		else
+		{
+			error = 3;
+			SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,  "Impossible de charger l'image : %s\n", IMG_GetError());
+		}
+
+		// On charge toutes les icônes de sous-catégorie de la catégorie
+		for(int i=TOUCHE_PLATEAU_MENU; i<TOUCHE_PLEIN_ECRAN+NB_TOUCHES_JEU; i++)
+		{
+			std::string temp = "Chargement de l'icône config_touches (";
+			temp += Affichage::intToString(i);
+			temp += "/";
+			temp += Affichage::intToString(NB_TOUCHES_JEU);
+			temp += ")";
+			this->afficherEcranChargement(61+i, temp.c_str());
+			std::string temp2 = this->path;
+			temp2 += BOUTON_CONFIG_DIRNAME;
+			temp2 += "touche/";
+			temp2 += Affichage::intToString(i);
+			temp2 += ".";
+			temp2 += IMAGE_FORMAT;
+
+			SDL_Surface* fondC = IMG_Load(temp2.c_str());
+			if(fondC)
+			{
+				Bouton* b = new Bouton(fondC, this->renderer, TAILLE_ICONE_CONFIG_TOUCHE*this->tailleRef, this->touchesJeu[i]->getNom(), this->touchesJeu[i]->getDescription());
+				bts.push_back(b);
+				this->lock.lock();
+				this->boutons.push_back(b);
+				this->lock.unlock();
+			}
+			else
+			{
+				error = 3;
+				SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,  "Impossible de charger l'image : %s\n", IMG_GetError());
+			}
+		}
+
+		// On ajoute les boutons au menu
+		this->menus[MENU_CONFIG_TOUCHES_CHOIX_TOUCHE]->ajoutCategorie(bts);
+	}
+
 
 	// icône souris
 	{
@@ -571,9 +529,9 @@ int Affichage::init() // TODO : Ajouter tous les éléments à charger + image d
         SDL_Surface* fondC = IMG_Load(temp2.c_str());
 		if(fondC)
 		{
-			Bouton* b = new Bouton(fondC, this->renderer, TAILLE_ICONE_CONFIG_TOUCHE);
+			Bouton* b = new Bouton(fondC, this->renderer, TAILLE_ICONE_CONFIG_TOUCHE*this->tailleRef);
 			this->lock.lock();
-			this->configTouches3Boutons.push_back(b);
+			this->boutons.push_back(b);
 			this->lock.unlock();
 		}
 		else
@@ -595,9 +553,9 @@ int Affichage::init() // TODO : Ajouter tous les éléments à charger + image d
 		SDL_Surface* fondC = IMG_Load(temp2.c_str());
 		if(fondC)
 		{
-			Bouton* b = new Bouton(fondC, this->renderer, TAILLE_ICONE_CONFIG_TOUCHE);
+			Bouton* b = new Bouton(fondC, this->renderer, TAILLE_ICONE_CONFIG_TOUCHE*this->tailleRef);
 			this->lock.lock();
-			this->configTouches3Boutons.push_back(b);
+			this->boutons.push_back(b);
 			this->lock.unlock();
 		}
 		else
@@ -616,7 +574,12 @@ int Affichage::init() // TODO : Ajouter tous les éléments à charger + image d
 
 		SDL_Surface* fondC = IMG_Load(temp2.c_str());
 		if(fondC)
-			this->configTouches4SurfaceBouton = fondC;
+		{
+			Bouton* b = new Bouton(fondC, this->renderer, TAILLE_ICONE_CONFIG_TOUCHE*this->tailleRef);
+			this->lock.lock();
+			this->boutons.push_back(b);
+			this->lock.unlock();
+		}
 		else
 		{
 			error = 3;
@@ -633,7 +596,12 @@ int Affichage::init() // TODO : Ajouter tous les éléments à charger + image d
 
 		SDL_Surface* fondC = IMG_Load(temp2.c_str());
 		if(fondC)
-			this->configTouches4SurfaceAxe = fondC;
+		{
+			Bouton* b = new Bouton(fondC, this->renderer, TAILLE_ICONE_CONFIG_TOUCHE*this->tailleRef);
+			this->lock.lock();
+			this->boutons.push_back(b);
+			this->lock.unlock();
+		}
 		else
 		{
 			error = 3;
@@ -650,7 +618,12 @@ int Affichage::init() // TODO : Ajouter tous les éléments à charger + image d
 
 		SDL_Surface* fondC = IMG_Load(temp2.c_str());
 		if(fondC)
-			this->configTouches4SurfaceCroix = fondC;
+		{
+			Bouton* b = new Bouton(fondC, this->renderer, TAILLE_ICONE_CONFIG_TOUCHE*this->tailleRef);
+			this->lock.lock();
+			this->boutons.push_back(b);
+			this->lock.unlock();
+		}
 		else
 		{
 			error = 3;
@@ -667,7 +640,12 @@ int Affichage::init() // TODO : Ajouter tous les éléments à charger + image d
 
 		SDL_Surface* fondC = IMG_Load(temp2.c_str());
 		if(fondC)
-			this->configTouches4SurfaceMolette = fondC;
+		{
+			Bouton* b = new Bouton(fondC, this->renderer, TAILLE_ICONE_CONFIG_TOUCHE*this->tailleRef);
+			this->lock.lock();
+			this->boutons.push_back(b);
+			this->lock.unlock();
+		}
 		else
 		{
 			error = 3;
@@ -684,7 +662,12 @@ int Affichage::init() // TODO : Ajouter tous les éléments à charger + image d
 
 		SDL_Surface* fondC = IMG_Load(temp2.c_str());
 		if(fondC)
-			this->configTouches4SurfaceNew = fondC;
+		{
+			Bouton* b = new Bouton(fondC, this->renderer, TAILLE_ICONE_CONFIG_TOUCHE*this->tailleRef);
+			this->lock.lock();
+			this->boutons.push_back(b);
+			this->lock.unlock();
+		}
 		else
 		{
 			error = 3;
@@ -714,6 +697,16 @@ unsigned int Affichage::nbTicks(unsigned int t)
 	return ret;
 }
 
+Bouton* Affichage::getBouton(int noBouton)
+{
+	Bouton* ret = nullptr;
+	this->lock.lock();
+	if(this->boutons.size()>noBouton && noBouton>0)
+		ret = this->boutons[noBouton];
+	this->lock.unlock();
+	return ret;
+}
+
 /**
  * Ensemble des fonctions d'affichage
  */
@@ -722,40 +715,33 @@ void Affichage::setEcran(int ecran)
 	this->lock.lock();
 	unsigned int nbT = this->nbTicks();
 	// On fait une animation selon la transition demandée
-	if(this->modeAffichage == MODE_AFFICHAGE_CONFIG_TOUCHES1 && ecran == MODE_AFFICHAGE_CONFIG_TOUCHES2)
+	if(this->ecran != MODE_AFFICHAGE_CONFIG_TOUCHES_CATEGORIES && ecran == MODE_AFFICHAGE_CONFIG_TOUCHES_CATEGORIES)
 	{
-		this->modeAffichage = MODE_TRANSITION_CONFIG_TOUCHES12;
-		this->configTouches2noToucheJeu = this->configTouches2noToucheJeuD;
-		this->nbTicksDebutTransition = nbTicks();
+		// On crée le menu des Touches
+		this->menu = menus[MENU_CONFIG_TOUCHES_CHOIX_TOUCHE];
+		int x, y;
+		SDL_GetWindowSize(this->pWindow, &x, &y);
+		// Le menu prend tout l'écran avec une marge de 10 pixels
+		this->menu->setTailleAffichage(x-20, y-20, TAILLE_ICONE_CONFIG_TOUCHE*this->tailleRef);
+		this->menu->setPositionAffichage(10, 10);
+		this->menu->update(0);
 	}
-	else if(this->modeAffichage == MODE_AFFICHAGE_CONFIG_TOUCHES2 && ecran == MODE_AFFICHAGE_CONFIG_TOUCHES1)
+	if(this->ecran == MODE_AFFICHAGE_CONFIG_TOUCHES_CATEGORIES && ecran != MODE_AFFICHAGE_CONFIG_TOUCHES_CATEGORIES)
 	{
-		this->modeAffichage = MODE_TRANSITION_CONFIG_TOUCHES21;
-		this->nbTicksDebutTransition = nbTicks();
-	}
-	else if(this->modeAffichage == MODE_AFFICHAGE_CONFIG_TOUCHES2 && ecran == MODE_AFFICHAGE_CONFIG_TOUCHES3)
-	{
-		this->modeAffichage = MODE_TRANSITION_CONFIG_TOUCHES23;
-		this->nbTicksDebutTransition = nbTicks();
-	}
-	else if(this->modeAffichage == MODE_AFFICHAGE_CONFIG_TOUCHES3 && ecran == MODE_AFFICHAGE_CONFIG_TOUCHES2)
-	{
-		this->modeAffichage = MODE_TRANSITION_CONFIG_TOUCHES32;
-		this->nbTicksDebutTransition = nbTicks();
-	}
-	else if(this->modeAffichage == MODE_AFFICHAGE_CONFIG_TOUCHES3 && ecran == MODE_AFFICHAGE_CONFIG_TOUCHES4)
-	{
-		this->modeAffichage = MODE_TRANSITION_CONFIG_TOUCHES34;
-		this->nbTicksDebutTransition = nbTicks();
-	}
-	else if(this->modeAffichage == MODE_AFFICHAGE_CONFIG_TOUCHES4 && ecran == MODE_AFFICHAGE_CONFIG_TOUCHES3)
-	{
-		this->modeAffichage = MODE_TRANSITION_CONFIG_TOUCHES43;
-		this->nbTicksDebutTransition = nbTicks();
+		this->menu->update(-1); // TODO : gérer animations
 	}
 	else
 		this->modeAffichage = ecran;
 	this->lock.unlock();
+}
+
+Menu* Affichage::getMenu()
+{
+	Menu* ret;
+	this->lock.lock();
+	ret = this->menu;
+	this->lock.unlock();
+	return ret;
 }
 
 void Affichage::afficherEcranChargement(int pourcentage, std::string message)
@@ -867,495 +853,6 @@ void Affichage::afficherEcranChargement(int pourcentage, std::string message)
 				SDL_RenderCopy(this->renderer, texteT, nullptr, &r);
 				SDL_DestroyTexture(texteT);
 			}
-		}
-	}
-}
-
-void Affichage::afficherMenuConfigTouches1(int categorie, int xReference, int opacite)
-{
-	// Si on change le menu
-	if(categorie > -1)
-	{
-		this->lock.lock();
-		this->configTouches1Categorie = this->configTouches1CategorieD;
-		this->configTouches1CategorieD = categorie;
-		this->configTouchesNbTicksAnimation = this->nbTicks();
-		this->lock.unlock();
-	}
-	// On dessine
-	else
-	{
-		// On calcul la position des boutons
-		int xRef = 0;
-		int yRef = 0;
-		SDL_GetWindowSize(this->pWindow, &xRef, &yRef);
-		xRef = (xRef*2)/3; // Centre droite
-		if(xReference != -1)
-			xRef = xReference;
-		yRef/=2; // Centre
-		yRef-=(this->configTouches1Categorie*TAILLE_ICONE_CONFIG_TOUCHE*(1+(NIVEAU_ZOOM_BOUTON_ACTIF/2))); // Ligne actuelle
-		if(this->configTouches1Categorie != this->configTouches1CategorieD)
-		{
-			// On déplace selon le temps
-			if(this->configTouches1Categorie < this->configTouches1CategorieD)
-				yRef -= TAILLE_ICONE_CONFIG_TOUCHE*(1+(NIVEAU_ZOOM_BOUTON_ACTIF/2))*(this->configTouches1CategorieD-this->configTouches1Categorie)*(this->nbTicks() - this->configTouchesNbTicksAnimation)/NB_TICKS_DEPLACEMENT_BOUTON;
-			else if(this->configTouches1Categorie > this->configTouches1CategorieD)
-				yRef += TAILLE_ICONE_CONFIG_TOUCHE*(1+(NIVEAU_ZOOM_BOUTON_ACTIF/2))*(this->configTouches1Categorie-this->configTouches1CategorieD)*(this->nbTicks() - this->configTouchesNbTicksAnimation)/NB_TICKS_DEPLACEMENT_BOUTON;
-
-			// Si on a fini l'animation on l'arrête
-			if(this->nbTicks() - this->configTouchesNbTicksAnimation >= NB_TICKS_DEPLACEMENT_BOUTON)
-			{
-				this->configTouches1Categorie = this->configTouches1CategorieD;
-			}
-		}
-
-		SDL_Rect pos;
-		pos.x = xRef;
-		pos.y = yRef;
-		for(int i=0; i<CONFIG_TOUCHES_NB_CATEGORIES; i++)
-		{
-			this->configTouches1Boutons[i]->afficher(&pos, this->nbTicks(), (this->configTouches1CategorieD == i), opacite);
-			pos.y += TAILLE_ICONE_CONFIG_TOUCHE*(1+(NIVEAU_ZOOM_BOUTON_ACTIF/2));
-		}
-	}
-}
-
-void Affichage::afficherMenuConfigTouches2(int noToucheJeu, int xReference, int opacite)
-{
-	// Si on change le menu
-	if(noToucheJeu > -1)
-	{
-		this->lock.lock();
-		this->configTouches1Categorie = this->configTouches1CategorieD;
-		this->configTouches2noToucheJeu = this->configTouches2noToucheJeuD;
-		this->configTouches2noToucheJeuD = noToucheJeu;
-		this->configTouchesNbTicksAnimation = this->nbTicks();
-		this->lock.unlock();
-	}
-	// On dessine
-	else
-	{
-		// On calcul la position des boutons
-		int xRef = 0;
-		int yRef = 0;
-		SDL_GetWindowSize(this->pWindow, &xRef, &yRef);
-		xRef = (xRef*2)/3; // Centre droite
-		if(xReference != -1)
-			xRef = xReference;
-		yRef/=2; // Centre
-		yRef-=(this->configTouches2noToucheJeu*TAILLE_ICONE_CONFIG_TOUCHE*(1+(NIVEAU_ZOOM_BOUTON_ACTIF/2))); // Ligne actuelle
-		if(this->configTouches2noToucheJeu != this->configTouches2noToucheJeuD)
-		{
-			// On déplace selon le temps
-			if(this->configTouches2noToucheJeu < this->configTouches2noToucheJeuD)
-				yRef -= TAILLE_ICONE_CONFIG_TOUCHE*(1+(NIVEAU_ZOOM_BOUTON_ACTIF/2))*(this->configTouches2noToucheJeuD-this->configTouches2noToucheJeu)*(this->nbTicks() - this->configTouchesNbTicksAnimation)/NB_TICKS_DEPLACEMENT_BOUTON;
-			else if(this->configTouches2noToucheJeu > this->configTouches2noToucheJeuD)
-				yRef += TAILLE_ICONE_CONFIG_TOUCHE*(1+(NIVEAU_ZOOM_BOUTON_ACTIF/2))*(this->configTouches2noToucheJeu-this->configTouches2noToucheJeuD)*(this->nbTicks() - this->configTouchesNbTicksAnimation)/NB_TICKS_DEPLACEMENT_BOUTON;
-
-			// Si on a fini l'animation on l'arrête
-			if(this->nbTicks() - this->configTouchesNbTicksAnimation >= NB_TICKS_DEPLACEMENT_BOUTON)
-			{
-				this->configTouches2noToucheJeu = this->configTouches2noToucheJeuD;
-			}
-		}
-
-		// Boutons ToucheJeu
-		SDL_Rect pos;
-		pos.x = xRef;
-		pos.y = yRef;
-		for(int i=0; i<CONFIG_TOUCHES_NB_TOUCHE_JEU; i++)
-		{
-			this->configTouches2Boutons[i]->afficher(&pos, this->nbTicks(), (this->configTouches2noToucheJeuD == i), opacite);
-			pos.y += TAILLE_ICONE_CONFIG_TOUCHE*(1+(NIVEAU_ZOOM_BOUTON_ACTIF/2));
-		}
-	}
-}
-
-void Affichage::afficherMenuConfigTouches3(int nbController, int noController, int xReference, int opacite)
-{
-	// Si on change le menu
-	if(nbController > -1)
-	{
-		this->lock.lock();
-		noController += 2;
-		this->configTouches2noToucheJeu = this->configTouches2noToucheJeuD;
-		this->configTouches3nbController = nbController;
-		this->configTouches3noController = this->configTouches3noControllerD;
-		this->configTouches3noControllerD = noController;
-		this->configTouchesNbTicksAnimation = this->nbTicks();
-		// Si on doit rajouter des boutons
-		for(int i=configTouches3Boutons.size(); i<nbController+2; i++) {
-			std::string temp2 = BOUTON_CONFIG_DIRNAME;
-			temp2 += "manette.";
-			temp2 += IMAGE_FORMAT;
-			SDL_Surface *fondC = IMG_Load(temp2.c_str());
-			if (fondC) {
-				Bouton* bt = new Bouton(fondC, this->renderer, TAILLE_ICONE_CONFIG_TOUCHE);
-				bt->init();
-				this->configTouches3Boutons.push_back(bt);
-			}
-			else
-				SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,  "Impossible de charger le bouton : %s\n", IMG_GetError());
-		}
-		this->lock.unlock();
-	}
-	// On dessine
-	else
-	{
-		// On calcul la position des boutons
-		int xRef = 0;
-		int yRef = 0;
-		SDL_GetWindowSize(this->pWindow, &xRef, &yRef);
-		xRef = (xRef*2)/3; // Centre droite
-		if(xReference != -1)
-			xRef = xReference;
-		yRef/=2; // Centre
-		yRef-=(this->configTouches3noController*TAILLE_ICONE_CONFIG_TOUCHE*(1+(NIVEAU_ZOOM_BOUTON_ACTIF/2))); // Ligne actuelle
-		if(this->configTouches3noController != this->configTouches3noControllerD)
-		{
-			// On déplace selon le temps
-			if(this->configTouches3noController < this->configTouches3noControllerD)
-				yRef -= TAILLE_ICONE_CONFIG_TOUCHE*(1+(NIVEAU_ZOOM_BOUTON_ACTIF/2))*(this->configTouches3noControllerD-this->configTouches3noController)*(this->nbTicks() - this->configTouchesNbTicksAnimation)/NB_TICKS_DEPLACEMENT_BOUTON;
-			else if(this->configTouches3noController > this->configTouches3noControllerD)
-				yRef += TAILLE_ICONE_CONFIG_TOUCHE*(1+(NIVEAU_ZOOM_BOUTON_ACTIF/2))*(this->configTouches3noController-this->configTouches3noControllerD)*(this->nbTicks() - this->configTouchesNbTicksAnimation)/NB_TICKS_DEPLACEMENT_BOUTON;
-
-			// Si on a fini l'animation on l'arrête
-			if(this->nbTicks() - this->configTouchesNbTicksAnimation >= NB_TICKS_DEPLACEMENT_BOUTON)
-			{
-				this->configTouches3noController = this->configTouches3noControllerD;
-			}
-		}
-
-		// Boutons ToucheJeu
-		SDL_Rect pos;
-		pos.x = xRef;
-		pos.y = yRef;
-		for(int i=0; i<this->configTouches3nbController+2 && i<this->configTouches3Boutons.size(); i++)
-		{
-			this->configTouches3Boutons[i]->afficher(&pos, this->nbTicks(), (this->configTouches3noControllerD == i), opacite);
-			pos.y += TAILLE_ICONE_CONFIG_TOUCHE*(1+(NIVEAU_ZOOM_BOUTON_ACTIF/2));
-		}
-	}
-}
-
-void Affichage::afficherMenuConfigTouches4(std::vector<Touche*>* t, int noTouche, int xReference, int opacite)
-{
-	// Si on change le menu
-	if(t == (std::vector<Touche*>*)-1)
-	{
-		this->configTouches4noController = nullptr;
-	}
-	else if(t != nullptr)
-	{
-		this->lock.lock();
-		this->configTouches3noController = this->configTouches3noControllerD;
-		this->configTouches4noTouche = this->configTouches4noToucheD;
-		this->configTouches4noToucheD = noTouche;
-		this->configTouchesNbTicksAnimation = this->nbTicks();
-		// On liste les boutons
-		if(t != this->configTouches4noController)
-		{
-			this->configTouches4noController = t;
-			// On vide les boutons actuels
-			for(int i=0; i<this->configTouches4Boutons.size(); i++)
-				delete this->configTouches4Boutons[i];
-			this->configTouches4Boutons.clear();
-			// On recrée les boutons
-			for(int i=0; i<t->size(); i++)
-			{
-				SDL_Surface* tex = this->configTouches4SurfaceCroix;
-				switch((*t)[i]->getType())
-				{
-					case TYPE_TOUCHE_MOLETTE:
-						tex = this->configTouches4SurfaceMolette;
-						break;
-
-					case TYPE_TOUCHE_BOUTON:
-						tex = this->configTouches4SurfaceBouton;
-						break;
-
-					case TYPE_TOUCHE_JOYSTIC:
-						tex = this->configTouches4SurfaceAxe;
-						break;
-
-					default:
-						break;
-				}
-				Bouton* bt = new Bouton(tex, this->renderer, TAILLE_ICONE_CONFIG_TOUCHE);
-				bt->init();
-				this->configTouches4Boutons.push_back(bt);
-			}
-			Bouton* bt = new Bouton(this->configTouches4SurfaceNew, this->renderer, TAILLE_ICONE_CONFIG_TOUCHE);
-			bt->init();
-			this->configTouches4Boutons.push_back(bt);
-		}
-		this->lock.unlock();
-	}
-	// On dessine
-	else
-	{
-		// On calcul la position des boutons
-		int xRef = 0;
-		int yRef = 0;
-		SDL_GetWindowSize(this->pWindow, &xRef, &yRef);
-		xRef = (xRef*2)/3; // Centre droite
-		if(xReference != -1)
-			xRef = xReference;
-		yRef/=2; // Centre
-		yRef-=(this->configTouches4noTouche*TAILLE_ICONE_CONFIG_TOUCHE*(1+(NIVEAU_ZOOM_BOUTON_ACTIF/2))); // Ligne actuelle
-		if(this->configTouches4noTouche != this->configTouches4noToucheD)
-		{
-			// On déplace selon le temps
-			if(this->configTouches4noTouche < this->configTouches4noToucheD)
-				yRef -= TAILLE_ICONE_CONFIG_TOUCHE*(1+(NIVEAU_ZOOM_BOUTON_ACTIF/2))*(this->configTouches4noToucheD-this->configTouches4noTouche)*(this->nbTicks() - this->configTouchesNbTicksAnimation)/NB_TICKS_DEPLACEMENT_BOUTON;
-			else if(this->configTouches4noTouche > this->configTouches4noToucheD)
-				yRef += TAILLE_ICONE_CONFIG_TOUCHE*(1+(NIVEAU_ZOOM_BOUTON_ACTIF/2))*(this->configTouches4noTouche-this->configTouches4noToucheD)*(this->nbTicks() - this->configTouchesNbTicksAnimation)/NB_TICKS_DEPLACEMENT_BOUTON;
-
-			// Si on a fini l'animation on l'arrête
-			if(this->nbTicks() - this->configTouchesNbTicksAnimation >= NB_TICKS_DEPLACEMENT_BOUTON)
-			{
-				this->configTouches4noTouche = this->configTouches4noToucheD;
-			}
-		}
-
-		// Boutons manette
-		SDL_Rect pos;
-		pos.x = xRef;
-		pos.y = yRef;
-		for(int i=0; i<this->configTouches4Boutons.size(); i++)
-		{
-			this->configTouches4Boutons[i]->afficher(&pos, this->nbTicks(), (this->configTouches4noToucheD == i), opacite);
-			pos.y += TAILLE_ICONE_CONFIG_TOUCHE*(1+(NIVEAU_ZOOM_BOUTON_ACTIF/2));
-		}
-	}
-}
-
-void Affichage::afficherInfoConfigurationTouches1(std::string nom, std::string description)
-{
-	if(description != "")
-	{
-		this->lock.lock();
-		this->configTouchesNom = nom;
-		this->configTouchesDescription = description;
-		this->lock.unlock();
-	}
-	else
-	{
-		// On assombrit le fond
-		int x = 0;
-		int y = 0;
-		SDL_Rect posEcran;
-		posEcran.x = 0;
-		posEcran.y = 0;
-		SDL_GetWindowSize(this->pWindow, &(posEcran.w), &(posEcran.h));
-		if(posEcran.w >= 3)
-			posEcran.w /= 3;
-		SDL_Surface* fondS = SDL_CreateRGBSurface(0, 1, 1, 32, rmask, gmask, bmask, amask);
-		SDL_FillRect(fondS, NULL, SDL_MapRGBA(fondS->format, 0, 0, 0, CONFIG_OPACITE_FILTRE_NOIR));
-		SDL_Texture* fondSombre = SDL_CreateTextureFromSurface(this->renderer, fondS);
-		SDL_FreeSurface(fondS);
-		SDL_RenderCopy(this->renderer, fondSombre, NULL, &posEcran);
-		SDL_DestroyTexture(fondSombre);
-
-		// On crée le titre
-		SDL_Color couleurTexte = {COULEUR_TEXTE_MENU_R, COULEUR_TEXTE_MENU_G, COULEUR_TEXTE_MENU_B};
-		SDL_Surface* titreSurface = TTF_RenderUTF8_Solid(this->policeTitreMenu, this->configTouchesNom.c_str(), couleurTexte);
-		if(titreSurface == nullptr)
-			return;
-		SDL_Texture* titre = SDL_CreateTextureFromSurface(this->renderer, titreSurface);
-		SDL_FreeSurface(titreSurface);
-		SDL_Rect posTitre;
-		SDL_QueryTexture(titre, NULL, NULL, &(posTitre.w), &(posTitre.h));
-		posTitre.x = (posEcran.w/2) - (posTitre.w/2);
-		posTitre.y = POSITION_TITRE_Y;
-		SDL_RenderCopy(this->renderer, titre, NULL, &posTitre);
-		SDL_DestroyTexture(titre);
-
-		// On crée les textes en tenant compte de la place
-		Uint16 text_Width = posEcran.w - 10;
-		std::vector<std::string> linesFirstPass;
-		std::vector<std::string> linesSecondPass;
-		std::vector<SDL_Surface*> lines;
-
-		// On éclate le texte
-		std::istringstream split(this->configTouchesDescription);
-		for (std::string each; std::getline(split, each, '\n');
-			linesFirstPass.push_back(each));
-
-		int hauteurTexte = 0;
-		// Pour chaque ligne
-		for(unsigned int i=0; i<linesFirstPass.size(); i++){
-			// On éclate la ligne
-			linesSecondPass.clear();
-			std::istringstream split2(linesFirstPass[i]);
-			for (std::string each; std::getline(split2, each, ' ');
-				linesSecondPass.push_back(each));
-
-			// Pour chaque mot
-			std::string mot;
-			for(unsigned int j=0; j<linesSecondPass.size(); j++){
-				// On regarde si c'est le premier mot de la ligne
-				if(!mot.compare(""))
-					mot = linesSecondPass[j];
-				else{
-					SDL_Surface* test = TTF_RenderUTF8_Solid(this->policeMenu, (std::string(mot+" "+linesSecondPass[j])).c_str(), couleurTexte);
-					// On regarde si on peut faire entrer le mot dans la case
-					if(test->w < text_Width)
-						mot += " "+linesSecondPass[j];
-					else{
-						lines.push_back(TTF_RenderUTF8_Solid(this->policeMenu, mot.c_str(), couleurTexte));
-						hauteurTexte = test->h + 8;
-						mot = linesSecondPass[j];
-					}
-					SDL_FreeSurface(test);
-				}
-			}
-
-			// S'il reste un mot dans le buffer, on l'écrit
-			if(mot.compare("")){
-				SDL_Surface* txt = TTF_RenderUTF8_Solid(this->policeMenu, mot.c_str(), couleurTexte);
-				lines.push_back(txt);
-				hauteurTexte = txt->h + 8;
-			}
-		}
-
-		// On écrit chaque ligne
-		SDL_Rect posTxt;
-		posTxt.x = 5;
-		posTxt.y = posTitre.y+posTitre.h;
-		for(Uint8 i = 0; i < lines.size(); i++){
-			posTxt.y += hauteurTexte;
-			SDL_Texture* texture = SDL_CreateTextureFromSurface(this->renderer, lines[i]);
-			SDL_FreeSurface(lines[i]);
-			SDL_QueryTexture(texture, NULL, NULL, &(posTxt.w), &(posTxt.h));
-			SDL_RenderCopy(this->renderer, texture, NULL, &posTxt);
-			SDL_DestroyTexture(texture);
-		}
-	}
-}
-
-void Affichage::afficherInfoConfigurationTouches2(Touche* t)
-{
-	if(t != nullptr)
-	{
-		this->lock.lock();
-		this->configTouchesManette = t;
-		this->lock.unlock();
-	}
-	else if(this->configTouchesManette != nullptr)
-	{
-		// On assombrit le fond
-		int x = 0;
-		int y = 0;
-		SDL_Rect posEcran;
-		posEcran.x = 0;
-		posEcran.y = 0;
-		SDL_GetWindowSize(this->pWindow, &(posEcran.w), &(posEcran.h));
-		if(posEcran.w >= 3)
-			posEcran.w /= 3;
-		SDL_Surface* fondS = SDL_CreateRGBSurface(0, 1, 1, 32, rmask, gmask, bmask, amask);
-		SDL_FillRect(fondS, NULL, SDL_MapRGBA(fondS->format, 0, 0, 0, CONFIG_OPACITE_FILTRE_NOIR));
-		SDL_Texture* fondSombre = SDL_CreateTextureFromSurface(this->renderer, fondS);
-		SDL_FreeSurface(fondS);
-		SDL_RenderCopy(this->renderer, fondSombre, NULL, &posEcran);
-		SDL_DestroyTexture(fondSombre);
-
-		// On crée le titre
-		std::string configTouchesNom = this->configTouchesManette->nom;
-		std::string configTouchesDescription = "";
-		if(configTouchesNom != "Nouvelle touche")
-		{
-			configTouchesDescription = "- Appuyé : ";
-			configTouchesDescription += (this->configTouchesManette->isPressed())?"Oui":"Non";
-			configTouchesDescription += "\n- Valeur brut de l'axe : ";
-			configTouchesDescription += Affichage::intToString(this->configTouchesManette->getValBrutAxe());
-			configTouchesDescription += "\n- Valeur minimum : ";
-			configTouchesDescription += Affichage::intToString(this->configTouchesManette->getValeurMin());
-			configTouchesDescription += "\n- Valeur maximum : ";
-			configTouchesDescription += Affichage::intToString(this->configTouchesManette->getValeurMax());
-			configTouchesDescription += "\n- Valeur lorsque cliqué : ";
-			configTouchesDescription += Affichage::intToString(this->configTouchesManette->getValeurClic());
-			configTouchesDescription += "\n- Valeur finale de l'axe : ";
-			configTouchesDescription += Affichage::intToString(this->configTouchesManette->getValAxe());
-		}
-
-		// On dessine le titre
-		SDL_Color couleurTexte = {COULEUR_TEXTE_MENU_R, COULEUR_TEXTE_MENU_G, COULEUR_TEXTE_MENU_B};
-		SDL_Surface* titreSurface = TTF_RenderUTF8_Solid(this->policeTitreMenu, configTouchesNom.c_str(), couleurTexte);
-		if(titreSurface == nullptr)
-		{
-			SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Impossible de créer le texte : %s\n", TTF_GetError());
-			return;
-		}
-
-		SDL_Texture* titre = SDL_CreateTextureFromSurface(this->renderer, titreSurface);
-		SDL_FreeSurface(titreSurface);
-		SDL_Rect posTitre;
-		SDL_QueryTexture(titre, NULL, NULL, &(posTitre.w), &(posTitre.h));
-		posTitre.x = (posEcran.w/2) - (posTitre.w/2);
-		posTitre.y = POSITION_TITRE_Y;
-		SDL_RenderCopy(this->renderer, titre, NULL, &posTitre);
-		SDL_DestroyTexture(titre);
-
-		// On crée les textes en tenant compte de la place
-		Uint16 text_Width = posEcran.w - 10;
-		std::vector<std::string> linesFirstPass;
-		std::vector<std::string> linesSecondPass;
-		std::vector<SDL_Surface*> lines;
-
-		// On éclate le texte
-		std::istringstream split(configTouchesDescription);
-		for (std::string each; std::getline(split, each, '\n');
-			linesFirstPass.push_back(each));
-
-		int hauteurTexte = 0;
-		// Pour chaque ligne
-		for(unsigned int i=0; i<linesFirstPass.size(); i++){
-			// On éclate la ligne
-			linesSecondPass.clear();
-			std::istringstream split2(linesFirstPass[i]);
-			for (std::string each; std::getline(split2, each, ' ');
-				linesSecondPass.push_back(each));
-
-			// Pour chaque mot
-			std::string mot;
-			for(unsigned int j=0; j<linesSecondPass.size(); j++){
-				// On regarde si c'est le premier mot de la ligne
-				if(!mot.compare(""))
-					mot = linesSecondPass[j];
-				else{
-					SDL_Surface* test = TTF_RenderUTF8_Solid(this->policeMenu, (std::string(mot+" "+linesSecondPass[j])).c_str(), couleurTexte);
-					// On regarde si on peut faire entrer le mot dans la case
-					if(test->w < text_Width)
-						mot += " "+linesSecondPass[j];
-					else{
-						lines.push_back(TTF_RenderUTF8_Solid(this->policeMenu, mot.c_str(), couleurTexte));
-						hauteurTexte = test->h + 8;
-						mot = linesSecondPass[j];
-					}
-					SDL_FreeSurface(test);
-				}
-			}
-
-			// S'il reste un mot dans le buffer, on l'écrit
-			if(mot.compare("")){
-				SDL_Surface* txt = TTF_RenderUTF8_Solid(this->policeMenu, mot.c_str(), couleurTexte);
-				lines.push_back(txt);
-				hauteurTexte = txt->h + 8;
-			}
-		}
-
-		// On écrit chaque ligne
-		SDL_Rect posTxt;
-		posTxt.x = 5;
-		posTxt.y = posTitre.y+posTitre.h;
-		for(Uint8 i = 0; i < lines.size(); i++){
-			posTxt.y += hauteurTexte;
-			SDL_Texture* texture = SDL_CreateTextureFromSurface(this->renderer, lines[i]);
-			SDL_FreeSurface(lines[i]);
-			SDL_QueryTexture(texture, NULL, NULL, &(posTxt.w), &(posTxt.h));
-			SDL_RenderCopy(this->renderer, texture, NULL, &posTxt);
-			SDL_DestroyTexture(texture);
 		}
 	}
 }

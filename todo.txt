@@ -1,0 +1,64 @@
+/**
+ * A trier :
+ */
+
+- ajouter bouton retour à la fin de chaque menu et sous-menu
+- gesstion de la souris
+	- Dans la configuration des touches, certaines choses ne peuvent pas changer, notamment l'utilisation du pointeur
+	- Possibilité de créer des curseurs/touches virtuelles qui seront activés lors d'un appuie long ou d'un appuie + déplacement du curseur/de la molette
+	- dans les menus, un clic à gauche = retour
+	- clic sur bouton -> selection bouton puis "valider"
+	- dans les menus -> molette = sélection haut/bas
+- Refaire totalement la gestion des touches, pour n'autoriser que certains inputs pour chaque touche virtuelle + chaque touche réelle a une config indépendante par touche virtuelle + une config globale (écrasée par la confing indépendante si présente)
+
+
+
+/**
+ * Gestion des menus, structure :
+ */
+
+- menu "pause" (en jeu)
+	- reprendre
+	- changer de pseudo
+	- chat
+	- quitter
+
+- Menu principale
+	- Bouton vers config touches
+	- Bouton vers jeu
+	- Bouton vers paramètres user
+	- Bouton pour quitter
+
+- Paramètres utilisateur
+	- Bouton Connexion
+		- Fenêtre avec ID/MDP -> bouton valider/annuler
+		- Fenêtre avec tentative de connexion -> bouton annuler
+		- Fenêtre de validation -> bouton OK
+	- Bouton Déconnexion (si connecté)
+		- Fenêtre de confirmation -> boutons valider/annuler
+		- Fenêtre de confirmation -> bouton OK
+	- Bouton retour
+
+- Configuration des touches
+	- Catégories :
+		.
+		.
+		.
+		.
+	- déplacement haut/bas
+		- sélection de l'appareil input (clavier/souris/manette)
+			- Liste des inputs déjà créés
+				- Fenêtre de modification des paramètres
+					- Sensibilité de l'input
+					- Valeur Min (si axe)
+					- Valeur Max (si axe)
+					- Valeur clic
+					- Inverser val
+			- Bouton nouvel input
+				- Fenêtre d'attente de l'appui sur l'input
+	-déplacement gauche/droite
+		- ...
+	-...
+
+- Page principale du jeu
+	- Affichage du plateau

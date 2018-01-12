@@ -6,7 +6,8 @@
 class Bouton // TODO : Surcharger le copy-constructeur et jouer un son à la sélection
 {
 	public:
-		Bouton(SDL_Surface* boutonSurface, SDL_Renderer* renderer, int taille);
+		Bouton(SDL_Surface* boutonSurface, SDL_Renderer* renderer, int taille, std::string nom="", std::string description="");
+		Bouton(SDL_Texture* boutonTexture, SDL_Renderer* renderer, int taille, std::string nom="", std::string description="");
 		virtual ~Bouton();
 
 		/**
@@ -24,15 +25,16 @@ class Bouton // TODO : Surcharger le copy-constructeur et jouer un son à la sé
 		void afficher(SDL_Rect* p, unsigned int nbTicks, bool etatSelection = false, int opacite = 255);
 
 		/**
-		 * Définit le texte à afficher sous le bouton
-		 * @param texte texte
-		 */
-		void setTitre(std::string texte);
-		/**
 		 * Modifie la taille de référence du bouton (zoom)
 		 * @param taille nouvelle taille
 		 */
 		void setTaille(int taille);
+
+		std::string getNom();
+		std::string getDescription();
+
+		void setNom(std::string nom);
+		void setDescription(std::string description);
 
 	protected:
 
@@ -44,6 +46,8 @@ class Bouton // TODO : Surcharger le copy-constructeur et jouer un son à la sé
 		SDL_Texture* boutonTexture = nullptr; // Bouton (texture)
 		SDL_Texture* texteTexture = nullptr; // Texte du bouton
 		SDL_Renderer* renderer = nullptr; // Renderer de la fenêtre
+		std::string nom; // Nom du bouton
+		std::string description; // Description du bouton
 };
 
 #endif // MANETTE_H

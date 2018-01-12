@@ -38,16 +38,12 @@
 #define ETAT_ERREUR 0
 #define ETAT_QUITTER 1
 #define ETAT_CHARGEMENT_JEU 2
-#define ETAT_CONFIG_TOUCHES_1 3
-#define ETAT_CONFIG_TOUCHES_2 4
-#define ETAT_CONFIG_TOUCHES_3 5
-#define ETAT_CONFIG_TOUCHES_4 6
-#define ETAT_CONFIG_TOUCHES_5 7
+#define ETAT_CONFIG_TOUCHES_CATEGORIES 3
 
 // Icônes
 #define TAILLE_ICONE_CHARGEMENT 256
-#define TAILLE_ICONE_CONFIG_TOUCHE 128
-#define TAILLE_TEXTE_BOUTON 12 // Taille du titre des boutons
+#define TAILLE_ICONE_CONFIG_TOUCHE 128 // TODO : rendre relatif à la taille de référence (variable dans Affichage)
+// #define TAILLE_TEXTE_BOUTON 12 // Taille du titre des boutons
 #define NIVEAU_ZOOM_BOUTON_ACTIF 0.6 // multiplication de la taille du bouton sélectionné (%)
 #define NB_TICKS_ANIMATION_BOUTON 5 // Nombre de ticks entre le début et la fin de l'animation de (dé)zoom du bouton
 #define NB_TICKS_DEPLACEMENT_BOUTON 7 // Nombre de ticks entre le début et la fin de l'animation de déplacement
@@ -62,7 +58,7 @@
 #define BOUTON_CLAVIER_FILENAME "data/image/button/config/keyboard.png"
 #define BOUTON_MANETTE_FILENAME "data/image/button/config/controller.png"
 #define BOUTON_CONFIG_DIRNAME "data/image/button/config/"
-#define POLICE_CHARGEMENT_TAILLE 24
+#define POLICE_CHARGEMENT_TAILLE 24 // TODO : rendre relatif à la taille de référence (variable dans Affichage)
 #define POLICE_MENU_TAILLE 18
 #define POLICE_MENU_TITRE_TAILLE 24
 
@@ -95,33 +91,58 @@
 #define NB_TOUCHES_SOURIS 5 // Nombre de touches allouées pour la souris
 #define PRECISION_VALEUR_AXE_TOUCHE 1024
 
-// Ecran de configuration des touches
-#define CONFIG_TOUCHES_NB_CATEGORIES 4
-#define CONFIG_TOUCHES_NB_TOUCHE_JEU 10
-#define CONFIG_OPACITE_FILTRE_NOIR 150
-#define POSITION_TITRE_Y 10
+// Bundles
+#define NB_BUNDLE 4
+#define BUNDLE_PERSISTANT 0
+#define BUNDLE_NAVIGATION 1
+#define BUNDLE_ANGULAIRE 2
+#define BUNDLE_PLATEAU 3
 
 // Touches
-#define NB_TOUCHES_JEU 10
-#define TOUCHE_HAUT_BAS 0
-#define TOUCHE_GAUCHE_DROITE 1
-#define AXE_HAUT_BAS_SELECTION 2
-#define AXE_GAUCHE_DROITE_SELECTION 3
-#define AXE_HAUT_BAS_DEPLACEMENT 4
-#define AXE_GAUCHE_DROITE_DEPLACEMENT 5
-#define TOUCHE_ENTRER 6
-#define TOUCHE_ANNULER 7
-#define TOUCHE_QUITTER 8
-#define TOUCHE_PLEIN_ECRAN 9
+#define NB_TOUCHES_JEU 24 // DOIVENT RESTER TRIES
+#define TOUCHE_PLEIN_ECRAN 0 // DOIT ETRE LE PREMIER DE LA CATEGORIE !!!
+#define TOUCHE_AFFICHAGE_FPS 1
+#define TOUCHE_NAVIGATION_DEPLACER_AXE_HAUT_BAS 2 // DOIT ETRE LE PREMIER DE LA CATEGORIE !!!
+#define TOUCHE_NAVIGATION_DEPLACER_AXE_GAUCHE_DROITE 3
+#define TOUCHE_NAVIGATION_SELECTION_BOUTON_HAUT_BAS 4
+#define TOUCHE_NAVIGATION_SELECTION_BOUTON_GAUCHE_DROITE 5
+#define TOUCHE_NAVIGATION_SELECTION_AXE_HAUT_BAS 6
+#define TOUCHE_NAVIGATION_SELECTION_AXE_GAUCHE_DROITE 7
+#define TOUCHE_NAVIGATION_VALIDER 8
+#define TOUCHE_NAVIGATION_RETOUR 9
+#define TOUCHE_NAVIGATION_AVANCE 10
+#define TOUCHE_ANGULAIRE_BOUTON_ANGLE 11 // DOIT ETRE LE PREMIER DE LA CATEGORIE !!!
+#define TOUCHE_ANGULAIRE_AXE_ANGLE 12
+#define TOUCHE_ANGULAIRE_VALIDER 12
+#define TOUCHE_ANGULAIRE_RETOUR 13
+#define TOUCHE_ANGULAIRE_AVANCE 14
+#define TOUCHE_PLATEAU_MENU 15 // DOIT ETRE LE PREMIER DE LA CATEGORIE !!!
+#define TOUCHE_PLATEAU_DEPLACER_X 16
+#define TOUCHE_PLATEAU_DEPLACER_Y 17
+#define TOUCHE_PLATEAU_SELECTION_BOUTON_HAUT_BAS 18
+#define TOUCHE_PLATEAU_SELECTION_BOUTON_GAUCHE_DROITE 19
+#define TOUCHE_PLATEAU_SELECTION_AXE_HAUT_BAS 20
+#define TOUCHE_PLATEAU_SELECTION_AXE_GAUCHE_DROITE 21
+#define TOUCHE_PLATEAU_VALIDER_CASE 22
+#define TOUCHE_PLATEAU_ZOOM 23
+
+// Modes de liaisons des touches
+#define MODE_INCONNU 0
+#define MODE_APPUIE_UNIQUE 1 // Enregistre les appuies, mais pas les relâchements
+#define MODE_AXE_RELATIF 2 // Ajoute ou soustrait à la valeur actuelle (ex : la vitesse de déplacement correspond à la valeur du joystic)
+#define MODE_AXE_ABSOLUE 3 // Remplace tout simplement la valeur actuelle (ex : la position du plateau correspond à la valeur du joystic)
 
 // Jeu
 #define TEMPS_TICKS 16 // Nombre de ms entre chaque tick, ici Approx. 60t/sec
 
+// Gestion des menus
+#define NB_MENUS 1
+#define MENU_CONFIG_TOUCHES_CHOIX_TOUCHE 0
 
 // Affichage en cours
 #define MODE_AFFICHAGE_CHARGEMENT 0
-#define MODE_AFFICHAGE_CONFIG_TOUCHES1 1
-#define MODE_AFFICHAGE_CONFIG_TOUCHES2 2
+#define MODE_AFFICHAGE_CONFIG_TOUCHES_CATEGORIES 1
+#define MODE_AFFICHAGE_CONFIG_TOUCHES_TOUCHE_JEU 2
 #define MODE_AFFICHAGE_CONFIG_TOUCHES3 3
 #define MODE_AFFICHAGE_CONFIG_TOUCHES4 4
 #define MODE_AFFICHAGE_CONFIG_TOUCHES5 5
