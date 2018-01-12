@@ -28,54 +28,56 @@ Controller::Controller(BundleTouche* persistant)
 	{
 		Touche* t = new Touche(-2, i, TYPE_TOUCHE_BOUTON);
 		this->manetteSouris->ajoutTouche(t);
-		t->configure = true;
 		t->nom = "Bouton "+Controller::intToString(i);
+		t->setValeursBrut(0, 1);
+		t->setValeurs(0, 1);
+		t->configure = true;
 	}
 
 	Touche* t = new Touche(-2, 1, TYPE_TOUCHE_MOLETTE); // Molette x
 	this->manetteSouris->ajoutTouche(t);
+	t->nom = "Molette X";
 	t->setValeursBrut(-100, 100);
 	t->setValeurs(-PRECISION_VALEUR_AXE_TOUCHE, PRECISION_VALEUR_AXE_TOUCHE);
 	t->configure = true;
-	t->nom = "Molette X";
 
 	t = new Touche(-2, 2, TYPE_TOUCHE_MOLETTE); // Molette y
 	this->manetteSouris->ajoutTouche(t);
+	t->nom = "Molette Y";
 	t->setValeursBrut(-100, 100);
 	t->setValeurs(-PRECISION_VALEUR_AXE_TOUCHE, PRECISION_VALEUR_AXE_TOUCHE);
 	t->configure = true;
-	t->nom = "Molette Y";
 
 	t = new Touche(-2, 1, TYPE_TOUCHE_JOYSTIC); // Pointeur x
 	this->manetteSouris->ajoutTouche(t);
+	t->nom = "Pointeur X";
 	t->setValeursBrut(0, TAILLE_FENETRE_X);
 	t->setValeurs(-PRECISION_VALEUR_AXE_TOUCHE, PRECISION_VALEUR_AXE_TOUCHE);
 	t->configure = true;
-	t->nom = "Pointeur X";
 
 	t = new Touche(-2, 2, TYPE_TOUCHE_JOYSTIC); // Pointeur y
 	this->manetteSouris->ajoutTouche(t);
+	t->nom = "Pointeur Y";
 	t->setValeursBrut(0, TAILLE_FENETRE_Y);
 	t->setValeurs(-PRECISION_VALEUR_AXE_TOUCHE, PRECISION_VALEUR_AXE_TOUCHE);
 	t->configure = true;
-	t->nom = "Pointeur Y";
 
 	// On crée les boutons du clavier
 	for(int i=0; i<=127; i++)
 	{
 		t = new Touche(-1, i, TYPE_TOUCHE_BOUTON);
+		t->nom = SDL_GetKeyName(i);
 		t->setValeursBrut(0, 1);
 		t->setValeurs(0, 1);
-		t->nom = SDL_GetKeyName(i);
 		t->configure = true;
 		this->manetteClavier->ajoutTouche(t);
 	}
 	for(int i=1073741881; i<=1073742106; i++)
 	{
 		t = new Touche(-1, i, TYPE_TOUCHE_BOUTON);
+		t->nom = SDL_GetKeyName(i);
 		t->setValeursBrut(0, 1);
 		t->setValeurs(0, 1);
-		t->nom = SDL_GetKeyName(i);
 		t->configure = true;
 		this->manetteClavier->ajoutTouche(t);
 	}
@@ -553,11 +555,17 @@ void Controller::update()
 						SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Window %d resized to %dx%d",
 								event.window.windowID, event.window.data1,
 								event.window.data2);
+						this->lock.unlock();
+						this->tailleFenetre(event.window.data1, event.window.data2);
+						this->lock.lock();
 						break;
 					case SDL_WINDOWEVENT_SIZE_CHANGED:
 						SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Window %d size changed to %dx%d",
 								event.window.windowID, event.window.data1,
 								event.window.data2);
+						this->lock.unlock();
+						this->tailleFenetre(event.window.data1, event.window.data2);
+						this->lock.lock();
 						break;
 					case SDL_WINDOWEVENT_MINIMIZED:
 						SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Window %d minimized", event.window.windowID);

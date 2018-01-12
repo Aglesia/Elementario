@@ -1,7 +1,11 @@
 #include <Menu.h>
+#include <ToucheJeu.h>
+#include <defs.h>
 
-Menu::Menu(ToucheJeu** touches)
+Menu::Menu(ToucheJeu** touches, SDL_Renderer* renderer, TTF_Font* policeMenu)
 {
+	this->policeMenu = policeMenu;
+	this->renderer = renderer;
 	this->nbBoutons.clear();
 	this->categories.clear();
 	this->boutons.clear();
@@ -57,6 +61,15 @@ void Menu::ajoutCategorie(std::vector<Bouton*> boutons)
 	}
 }
 
+void Menu::selectCategorie(int numCategorie)
+{
+	if(numCategorie>=0 && numCategorie<this->categories.size())
+	{
+		this->boutonSelect = 0;
+		this->categorieSelect = numCategorie;
+	}
+}
+
 /**
  * Met à jour les actions boutons, puis l'affichage selon les déplacements/sélections effectués
  * Les déplacements horizontaux du menu servent aux catégories, les déplacement verticaux servent aux boutons de sous-catégorie
@@ -65,19 +78,129 @@ void Menu::ajoutCategorie(std::vector<Bouton*> boutons)
 int Menu::update(int ticks) // TODO
 {
 	// Si on est en animation, on la gère
+	int opacite = 255;
+
 	// On regarde les input et on les met à jour en conséquence
+	// On calcul la taille si elle sort des ilmites
+	if(this->tailleBouton>this->tailleY/3)
+		this->tailleBouton = tailleY/3;
+	if(this->tailleBouton>this->tailleX)
+		this->tailleBouton = tailleX;
+
 	// On calcul la nouvelle sélection, et les nouveaux emplacements
+
+	// On dessine le menu vide
+	SDL_Rect fond;
+	fond.x = this->positionX;
+	fond.y = this->positionY;
+	fond.w = this->tailleX;
+	fond.h = this->tailleY;
+	SDL_Surface* fondS = SDL_CreateRGBSurface(0, 1, 1, 32, rmask, gmask, bmask, amask);
+	SDL_FillRect(fondS, NULL, SDL_MapRGBA(fondS->format, MENU_COULEUR_FOND_R, MENU_COULEUR_FOND_G, MENU_COULEUR_FOND_B, MENU_OPACITE_FOND));
+	SDL_Texture* fondSombre = SDL_CreateTextureFromSurface(this->renderer, fondS);
+	SDL_FreeSurface(fondS);
+	SDL_RenderCopy(this->renderer, fondSombre, NULL, &fond);
+	SDL_DestroyTexture(fondSombre);
+
+	// bords du menu // TODO : images, motifs qui se répètent
+	fondS = SDL_CreateRGBSurface(0, 1, 1, 32, rmask, gmask, bmask, amask);
+	SDL_FillRect(fondS, NULL, SDL_MapRGBA(fondS->format, MENU_COULEUR_BORDURE_R, MENU_COULEUR_BORDURE_G, MENU_COULEUR_BORDURE_B, 255));
+	fondSombre = SDL_CreateTextureFromSurface(this->renderer, fondS);
+	SDL_FreeSurface(fondS);
+	// haut
+	fond.y = this->positionY; // TODO : prendre en compte l'apaisseur de la bordure
+	fond.h = 1;
+	SDL_RenderCopy(this->renderer, fondSombre, NULL, &fond);
+	// bas
+	fond.y = this->positionY+this->tailleY; // TODO : prendre en compte l'apaisseur de la bordure
+	SDL_RenderCopy(this->renderer, fondSombre, NULL, &fond);
+	// gauche
+	fond.y = this->positionY; // TODO : prendre en compte l'apaisseur de la bordure
+	fond.h = this->tailleY;
+	fond.w = 1;
+	SDL_RenderCopy(this->renderer, fondSombre, NULL, &fond);
+	// droite
+	fond.x = this->positionX+this->tailleX;
+	SDL_RenderCopy(this->renderer, fondSombre, NULL, &fond);
+	// Séparation
+	fond.y = this->positionY+this->tailleBouton; // TODO : prendre en compte l'apaisseur de la bordure
+	fond.x = this->positionX+4;
+	fond.w = this->tailleX-8;
+	fond.h = 2;
+	SDL_RenderCopy(this->renderer, fondSombre, NULL, &fond);
+	SDL_DestroyTexture(fondSombre);
+
+	// On dessine les boutons de catégorie en tenant compte de la sélection
+	// On dessine les boutons de la catégorie sélectionnée en tenant compte de la sélection
 	// On affiche le nom et la description de la sélection
+	if(this->boutons.size()>this->boutonSelect)
+	{
+		// On ajoute le fond
+		SDL_Rect fond;
+		fond.x = this->positionX+1;
+		fond.y = (this->positionY+this->tailleY)-(this->tailleBouton*MENU_TAILLE_BANDE_TEXTE);
+		fond.w = this->tailleX-1;
+		fond.h = this->tailleBouton*MENU_TAILLE_BANDE_TEXTE;
+		SDL_Surface* fondS = SDL_CreateRGBSurface(0, 1, 1, 32, rmask, gmask, bmask, amask);
+		SDL_FillRect(fondS, NULL, SDL_MapRGBA(fondS->format, MENU_COULEUR_FOND_R, MENU_COULEUR_FOND_G, MENU_COULEUR_FOND_B, MENU_OPACITE_BANDE_TEXTE));
+		SDL_Texture* fondSombre = SDL_CreateTextureFromSurface(this->renderer, fondS);
+		SDL_FreeSurface(fondS);
+		SDL_RenderCopy(this->renderer, fondSombre, NULL, &fond);
+		SDL_DestroyTexture(fondSombre);
+		fondS = SDL_CreateRGBSurface(0, 1, 1, 32, rmask, gmask, bmask, amask);
+		SDL_FillRect(fondS, NULL, SDL_MapRGBA(fondS->format, MENU_COULEUR_BORDURE_R, MENU_COULEUR_BORDURE_G, MENU_COULEUR_BORDURE_B, 255));
+		fondSombre = SDL_CreateTextureFromSurface(this->renderer, fondS);
+		SDL_FreeSurface(fondS);
+		// haut
+		fond.h = 1;
+		SDL_RenderCopy(this->renderer, fondSombre, NULL, &fond);
+		SDL_DestroyTexture(fondSombre);
 
+		// On ajoute le titre
+		SDL_Color couleurTexte = {MENU_COULEUR_TEXTE_R, MENU_COULEUR_TEXTE_G, MENU_COULEUR_TEXTE_B, 255};
+		SDL_Surface* texte = TTF_RenderUTF8_Blended(this->policeMenu, this->boutons[this->boutonSelect]->getNom().c_str(), couleurTexte);
+		if(texte != nullptr)
+		{
+			// On calcul sa position et on l'affiche
+			SDL_Rect r;
+			r.x = fond.x+(fond.w/2)-(texte->w/2);
+			r.y = fond.y+(texte->h*2);
+			r.h = texte->h; // TODO : rendre texte plus gros, puis diminuer selon la taille de référence
+			r.w = texte->w;
+			SDL_Texture* texteT = SDL_CreateTextureFromSurface(this->renderer, texte);
+			SDL_FreeSurface(texte);
+			SDL_RenderCopy(this->renderer, texteT, nullptr, &r);
+			SDL_DestroyTexture(texteT);
+		}
+		else
+			SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,  "Impossible de créer le texte : %s\n", TTF_GetError());
 
+		// On ajoute le texte
+		texte = TTF_RenderUTF8_Blended(this->policeMenu, this->boutons[this->boutonSelect]->getDescription().c_str(), couleurTexte);
+		if(texte != nullptr)
+		{
+			// On calcul sa position et on l'affiche
+			SDL_Rect r;
+			r.x = fond.x+(fond.w/2)-(texte->w/2);
+			r.y = fond.y+(texte->h*4);
+			r.h = texte->h; // TODO : rendre texte plus gros, puis diminuer selon la taille de référence
+			r.w = texte->w;
+			SDL_Texture* texteT = SDL_CreateTextureFromSurface(this->renderer, texte);
+			SDL_FreeSurface(texte);
+			SDL_RenderCopy(this->renderer, texteT, nullptr, &r);
+			SDL_DestroyTexture(texteT);
+		}
+	}
 
-	int selectionX = 0; // Position du pointeur de sélection (zone : écran complet)
+	/*int selectionX = 0; // Position du pointeur de sélection (zone : écran complet)
 	int selectionY = 0; // Position du pointeur de sélection (zone : écran complet)
 	int boutonSelect = 0; // Bouton actuellement sélectionné
 	int categorieSelect = 0; // Catégorie actuellement sélectionnée
 	int result = 0; // Dernier résultat s'il y'en a un
 	int ticksAnimation = 0; // nbTicks depuis le début de l'animation
-	int typeAnimation = 0; // 0 = aucune animation, 1 = ouverture, 2 = fermeture (opacité +/-)
+	int typeAnimation = 0; // 0 = aucune animation, 1 = ouverture, 2 = fermeture (opacité +/-)*/
+
+	return 0;
 }
 
 /**

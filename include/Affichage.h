@@ -19,6 +19,7 @@ class Affichage
 		int init();
 		// à appeler dans le main thread, une fois l'init fait : crée les textures depuis les surfaces
 		int init_main();
+		void getScreenSize(int* x, int* y);
 		// Retourne le nombre de ticks depuis le lancement du jeu
 		// Si un nombre de ticks est indiqué, retourne le nombre de ticks écoulés depuis la référence donnée
 		unsigned int nbTicks(unsigned int t = 0);
@@ -99,9 +100,10 @@ class Affichage
 		Menu** menus = nullptr; // Ensemble des menus possibles, ils seront créés à l'init
 		int ecran = 0; // Ecran actuel
 
-		int modeAffichage = 0; // Indique quel type d'écran on affiche (menu, chargement...)
 		bool pleinEcran = false; // Indique si la fenêtre est en plein écran (fenêtré sans bordure)
 		int tailleRef = 1; // Indique la taille de référence pour l'affichage
+		int ancienneTailleX = 0; // Ancienne taille enregistrée pour la fenêtre
+		int ancienneTailleY = 0; // Ancienne taille enregistrée pour la fenêtre
 };
 
 #endif // AFFICHAGE_H

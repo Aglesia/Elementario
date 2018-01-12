@@ -128,6 +128,7 @@ void Touche::setValeursBrut(int min, int max)
 		this->maxBrut = min;
 	}
 	this->lock.unlock();
+	SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Modification des limites bruts de %s : (%d.%d)", this->nom.c_str(), this->minBrut, this->maxBrut);
 }
 
 bool Touche::getInversion()

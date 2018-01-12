@@ -288,6 +288,10 @@ int main(int argc, char** argv)
 	Controller* c = new Controller(bundlePersistant);
 	c->update();
 
+	int x = 0, y = 0;
+	aff->getScreenSize(&x, &y);
+	c->tailleFenetre(x, y);
+
 	// Boucle principale
 	int etat = ETAT_CHARGEMENT_JEU;
 	bool pe = false; // Plein écran
@@ -352,7 +356,7 @@ int main(int argc, char** argv)
 						var.touchesJeu[TOUCHE_PLEIN_ECRAN]->setVal(0);
 						// On change l'état
 						int x = 0, y = 0;
-						aff->modePleinEcran(pe = !pe, &x, &y); // TODO : corriger bug !!!
+						aff->modePleinEcran(pe = !pe, &x, &y);
 						c->tailleFenetre(x, y);
 					}
 				var.mutex.unlock();

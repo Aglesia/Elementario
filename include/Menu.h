@@ -7,7 +7,7 @@
 class Menu
 {
 	public:
-		Menu(ToucheJeu** touches);
+		Menu(ToucheJeu** touches, SDL_Renderer* renderer, TTF_Font* policeMenu);
 		~Menu();
 
 		/**
@@ -31,6 +31,12 @@ class Menu
 		void ajoutCategorie(std::vector<Bouton*> boutons);
 
 		/**
+		 * Passe le menu sous la catégorie indiquée
+		 * @param numCategorie Numéro de la catégorie à sélectionner
+		 */
+		void selectCategorie(int numCategorie);
+
+		/**
 		 * Met à jour les actions boutons, puis l'affichage selon les déplacements/sélections effectués
 		 * Les déplacements horizontaux du menu servent aux catégories, les déplacement verticaux servent aux boutons de sous-catégorie
 		 * @ticks  Nombre de ticks actuel (si 0, initialise le compteur pour début, si -1, initalise pour fin)
@@ -45,6 +51,7 @@ class Menu
 		int getResult();
 
 	private:
+		SDL_Renderer* renderer; // Renderer sur lequel dessiner
 		int positionX = 0; // position absolue du menu, en pixel
 		int positionY = 0; // position absolue du menu, en pixel
 		int tailleX = 0; // Taille absolue du menu en pixel
@@ -52,7 +59,7 @@ class Menu
 		int tailleBouton = 0; // Taille d'un bouton (taille*taille), en pixels
 		int selectionX = 0; // Position du pointeur de sélection (zone : écran complet)
 		int selectionY = 0; // Position du pointeur de sélection (zone : écran complet)
-		int boutonSelect = 0; // Bouton actuellement sélectionné
+		int boutonSelect = 0; // Bouton actuellement sélectionné (négatif pour catégorie)
 		int categorieSelect = 0; // Catégorie actuellement sélectionnée
 		int nbBtParLigne = 0; // Nombre de boutons par lignes
 		std::vector<int> nbBoutons; // Tableau indiquant pour CHAQUE catégorie, combien de boutons il y a
@@ -62,6 +69,7 @@ class Menu
 		int ticksAnimation = 0; // nbTicks depuis le début de l'animation
 		int typeAnimation = 0; // 0 = aucune animation, 1 = ouverture, 2 = fermeture (opacité +/-)
 		int result = 0; // Dernier résultat s'il y'en a un
+		TTF_Font* policeMenu; // Police d'écriture sur le menu
 };
 
 #endif

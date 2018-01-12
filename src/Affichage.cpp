@@ -91,6 +91,17 @@ void Affichage::modePleinEcran(bool pleinEcran, int* x, int* y)
 }
 
 /**
+ * Active ou désactive le mode plein écran de la fenêtre
+ * Valeur par défaut : activer le mode plein écran (true)
+ */
+void Affichage::getScreenSize(int* x, int* y)
+{
+	this->lock.lock();
+	SDL_GetWindowSize(this->pWindow, x, y);
+	this->lock.unlock();
+}
+
+/**
  * Met à jour l'affichage de la fenêtre, appel bloquant à cause du VSync
  */
 void Affichage::update()
@@ -147,8 +158,20 @@ void Affichage::update()
 		SDL_RenderCopy(this->renderer, this->fond, &pos, nullptr);
 	}
 
+	// Si la taille de la fenêtre a changée, on recharge l'écran
+	int x, y;
+	SDL_GetWindowSize(this->pWindow, &x, &y);
+	if(x != this->ancienneTailleX || y != this->ancienneTailleY)
+	{
+		this->ancienneTailleX = x;
+		this->ancienneTailleY = y;
+		this->lock.unlock();
+		this->setEcran(-1);
+		this->lock.lock();
+	}
+
 	// Selon le mode actuel, on appelle la bonne méthode
-	switch(this->modeAffichage){
+	switch(this->ecran){
 		case MODE_AFFICHAGE_CHARGEMENT:
 			this->afficherEcranChargement();
 			break;
@@ -273,7 +296,7 @@ int Affichage::init() // TODO : Ajouter tous les éléments à charger + image d
 	// On crée les menus
 	this->menus = new Menu*[NB_MENUS];
 	for(int i=0; i<NB_MENUS; i++)
-		this->menus[i] = new Menu(this->touchesJeu);
+		this->menus[i] = new Menu(this->touchesJeu, this->renderer, this->policeMenu);
 
 	// On met une alerte si le nombre de bundle change (il faut recoder les touches en dur)
 	if(NB_BUNDLE != 4)
@@ -516,7 +539,6 @@ int Affichage::init() // TODO : Ajouter tous les éléments à charger + image d
 		this->menus[MENU_CONFIG_TOUCHES_CHOIX_TOUCHE]->ajoutCategorie(bts);
 	}
 
-
 	// icône souris
 	{
 		std::string temp = "Chargement de l'icône config_touche_3 (1/2)";
@@ -710,28 +732,33 @@ Bouton* Affichage::getBouton(int noBouton)
 /**
  * Ensemble des fonctions d'affichage
  */
-void Affichage::setEcran(int ecran)
+void Affichage::setEcran(int ecran) // TODO : Gérer les transitions
 {
+	if(ecran == -1)
+		ecran = this->ecran;
 	this->lock.lock();
 	unsigned int nbT = this->nbTicks();
-	// On fait une animation selon la transition demandée
+	// On ouvre le menu de config touche - choix
 	if(this->ecran != MODE_AFFICHAGE_CONFIG_TOUCHES_CATEGORIES && ecran == MODE_AFFICHAGE_CONFIG_TOUCHES_CATEGORIES)
 	{
 		// On crée le menu des Touches
 		this->menu = menus[MENU_CONFIG_TOUCHES_CHOIX_TOUCHE];
-		int x, y;
-		SDL_GetWindowSize(this->pWindow, &x, &y);
 		// Le menu prend tout l'écran avec une marge de 10 pixels
-		this->menu->setTailleAffichage(x-20, y-20, TAILLE_ICONE_CONFIG_TOUCHE*this->tailleRef);
+		this->menu->setTailleAffichage(this->ancienneTailleX-20, this->ancienneTailleY-20, TAILLE_ICONE_CONFIG_TOUCHE*this->tailleRef);
 		this->menu->setPositionAffichage(10, 10);
 		this->menu->update(0);
 	}
+	// On ferme le menu de config touche - choix
 	if(this->ecran == MODE_AFFICHAGE_CONFIG_TOUCHES_CATEGORIES && ecran != MODE_AFFICHAGE_CONFIG_TOUCHES_CATEGORIES)
 	{
 		this->menu->update(-1); // TODO : gérer animations
 	}
-	else
-		this->modeAffichage = ecran;
+	// On recharge la fenêtre du menu de config touche - choix
+	if(this->ecran == MODE_AFFICHAGE_CONFIG_TOUCHES_CATEGORIES && ecran == MODE_AFFICHAGE_CONFIG_TOUCHES_CATEGORIES)
+	{
+		this->menu->setTailleAffichage(this->ancienneTailleX-20, this->ancienneTailleY-20, TAILLE_ICONE_CONFIG_TOUCHE*this->tailleRef);
+	}
+	this->ecran = ecran;
 	this->lock.unlock();
 }
 
@@ -751,7 +778,6 @@ void Affichage::afficherEcranChargement(int pourcentage, std::string message)
 	{
 		// On change les attributs en tenant compte des mutex
 		this->lock.lock();
-		this->modeAffichage = MODE_AFFICHAGE_CHARGEMENT;
 		if(pourcentage >= 0 && pourcentage <= 100)
 			this->pourcentage = pourcentage;
 		this->texteChargement = message;

@@ -17,6 +17,9 @@ LOCAL_SRC_FILES += $(LOCAL_PATH)/../../../../../../src/Controller.cpp
 LOCAL_SRC_FILES += $(LOCAL_PATH)/../../../../../../src/Manette.cpp
 LOCAL_SRC_FILES += $(LOCAL_PATH)/../../../../../../src/Touche.cpp
 LOCAL_SRC_FILES += $(LOCAL_PATH)/../../../../../../src/ToucheJeu.cpp
+LOCAL_SRC_FILES += $(LOCAL_PATH)/../../../../../../src/Menu.cpp
+LOCAL_SRC_FILES += $(LOCAL_PATH)/../../../../../../src/BundleTouche.cpp
+LOCAL_SRC_FILES += $(LOCAL_PATH)/../../../../../../src/LiaisonTouche.cpp
 LOCAL_SRC_FILES += $(LOCAL_PATH)/../../../../../../src/main.cpp
 
 LOCAL_SHARED_LIBRARIES := SDL2
