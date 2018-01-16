@@ -11,7 +11,7 @@ class Touche
 
 		// access
 		bool isTouche(int noManette, int noTouche, int typeTouche);
-		int getValAxe();
+		int getValAxe(bool sys = false);
 		void setValAxe(int valeurBrut, bool ignoreInversion = false);
 
 		// Config

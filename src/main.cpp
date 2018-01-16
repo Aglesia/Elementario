@@ -175,6 +175,15 @@ static int thread_Init(void* data) // TODO : Toutes les touches de base
 			lt->setMode(MODE_AXE_RELATIF);
 			t->var->bundles[BUNDLE_NAVIGATION]->ajouterLiaison(lt);
 		}
+
+		Touche* touche2 = t->c->getTouche(-2, 1, TYPE_TOUCHE_MOLETTE); // Molette Y
+		touche = t->c->getTouche(-1, SDLK_LCTRL, TYPE_TOUCHE_BOUTON); // Molette Y
+		if(touche && touche2)
+		{
+			LiaisonTouche* lt = new LiaisonTouche(t->var->touchesJeu[TOUCHE_NAVIGATION_DEPLACER_AXE_HAUT_BAS], touche, touche2);
+			lt->setMode(MODE_AXE_RELATIF);
+			t->var->bundles[BUNDLE_NAVIGATION]->ajouterLiaison(lt);
+		}
 	}
 
 	// On initialise les graphismes

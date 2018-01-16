@@ -23,6 +23,7 @@ class Bouton // TODO : Surcharger le copy-constructeur et jouer un son à la sé
 		 * @param etatSelection Etat actuel du bouton (sélectionné ou non)
 		 */
 		void afficher(SDL_Rect* p, unsigned int nbTicks, bool etatSelection = false, int opacite = 255);
+		void afficher(SDL_Rect* p, bool etatSelection, int opacite, SDL_Rect* p2);
 
 		/**
 		 * Modifie la taille de référence du bouton (zoom)

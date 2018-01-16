@@ -64,7 +64,7 @@ void Bouton::afficher(SDL_Rect* p, unsigned int nbTicks, bool etatSelection, int
 			pos.w = taille;
 			if(etatSelection)
 			{
-				this->etatAnimation = 1;
+				this->etatAnimation = (nbTicks>0)?1:2;
 				this->nbTicksAnimation = nbTicks;
 			}
 			break;
@@ -87,7 +87,7 @@ void Bouton::afficher(SDL_Rect* p, unsigned int nbTicks, bool etatSelection, int
 			pos.w = pos.h;
 			if(!etatSelection)
 			{
-				this->etatAnimation = 3;
+				this->etatAnimation = (nbTicks>0)?3:0;
 				this->nbTicksAnimation = nbTicks;
 			}
 			break;
@@ -111,6 +111,36 @@ void Bouton::afficher(SDL_Rect* p, unsigned int nbTicks, bool etatSelection, int
 	pos.y = p->y - (pos.h/2);
 	SDL_SetTextureAlphaMod(this->boutonTexture, opacite);
 	SDL_RenderCopy(this->renderer, this->boutonTexture, nullptr, &pos);
+}
+
+/**
+ * Affiche le bouton sur la texture, en plaçant le centre à l'emplacement indiqué
+ * @param pos           Position du centre du bouton
+ * @param etatSelection Etat actuel du bouton (sélectionné ou non)
+ */
+void Bouton::afficher(SDL_Rect* p, bool etatSelection, int opacite, SDL_Rect* p2)
+{
+	// On vérifie que la texture est initialisée
+	if(this->boutonTexture == nullptr)
+	{
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,  "Impossible d'afficher le bouton : il n'est pas initialisé");
+		return;
+	}
+
+	// On calcul la position
+	SDL_Rect pos;
+	SDL_Rect pos2;
+	pos.w = p2->w;
+	pos.h = p2->h;
+	pos.x = p->x - (p->w/2) + p2->x;
+	pos.y = p->y - (p->h/2) + p2->y;
+	SDL_QueryTexture(this->boutonTexture, NULL, NULL, &pos2.w, &pos2.h);
+	pos2.x=(pos2.w*p2->x)/p->w;
+	pos2.y=(pos2.h*p2->y)/p->h;
+	pos2.w=(pos2.w*p2->w)/p->w;
+	pos2.h=(pos2.h*p2->h)/p->h;
+	SDL_SetTextureAlphaMod(this->boutonTexture, opacite);
+	SDL_RenderCopy(this->renderer, this->boutonTexture, &pos2, &pos);
 }
 
 std::string Bouton::getNom()

@@ -23,13 +23,14 @@ bool Touche::isTouche(int noManette, int noTouche, int typeTouche)
 /**
  * Retourne la valeur actuelle de l'axe
  * Si le bouton est une molette, remet sa valeur à 0
+ * @param sys Utilisé par Controller.cpp
  * @return valeur de l'axe
  */
-int Touche::getValAxe()
+int Touche::getValAxe(bool sys)
 {
 	this->lock.lock();
 	int ret = this->valeur;
-	if(this->typeTouche == TYPE_TOUCHE_MOLETTE)
+	if(this->typeTouche == TYPE_TOUCHE_MOLETTE && !sys)
 		this->valeur = 0;
 	this->lock.unlock();
 	return ret;
@@ -56,10 +57,10 @@ void Touche::setValAxe(int valeurBrut, bool ignoreInversion)
 	else
 	{
 		this->valeur += (((valeurBrut-this->minBrut)*(this->max-this->min))/(this->maxBrut-this->minBrut))+this->min;
-		if(this->valeur > (this->max+this->min)/2)
-			this->valeur = (this->max+this->min)/2;
-		if(this->valeur*-1 > (this->max+this->min)/2)
-			this->valeur = ((this->max+this->min)/2)*-1;
+		if(this->valeur > this->max)
+			this->valeur = this->max;
+		if(this->valeur < this->min)
+			this->valeur = this->min;
 	}
 
 	// On inverse si besoin

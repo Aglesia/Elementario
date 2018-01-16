@@ -123,7 +123,7 @@ int Menu::update(int ticks) // TODO
 	fond.x = this->positionX+this->tailleX;
 	SDL_RenderCopy(this->renderer, fondSombre, NULL, &fond);
 	// Séparation
-	fond.y = this->positionY+this->tailleBouton; // TODO : prendre en compte l'apaisseur de la bordure
+	fond.y = this->positionY+(this->tailleBouton*(NIVEAU_ZOOM_BOUTON_ACTIF+1)); // TODO : prendre en compte l'apaisseur de la bordure
 	fond.x = this->positionX+4;
 	fond.w = this->tailleX-8;
 	fond.h = 2;
@@ -131,7 +131,78 @@ int Menu::update(int ticks) // TODO
 	SDL_DestroyTexture(fondSombre);
 
 	// On dessine les boutons de catégorie en tenant compte de la sélection
+	int tailleXTotale = this->categories.size() * this->tailleBouton + this->tailleBouton*NIVEAU_ZOOM_BOUTON_ACTIF;
+	int refX = this->positionX;
+
+	// On calcul les déplacements maximum des icônes
+	int refXMin = this->positionX-MENU_CATEGORIE_DEPLACEMENT_MINIMUM;
+	int refXMax = this->positionX+MENU_CATEGORIE_DEPLACEMENT_MINIMUM;
+	if(tailleXTotale > this->tailleX)
+		refXMin = refX - (tailleXTotale - this->tailleX) - MENU_CATEGORIE_DEPLACEMENT_MINIMUM;
+
+	// On décale X vers la gauche ou la droite selon la position du joystic
+	ToucheJeu* axeX = this->touches[TOUCHE_NAVIGATION_DEPLACER_AXE_GAUCHE_DROITE];
+	refX += ((axeX->getVal() - axeX->getValeurMin()) * (refXMax - refXMin)/(axeX->getValeurMax() - axeX->getValeurMin())) + refXMin;
+
+	// Si on a trop décalé, on remet aux limites
+	if(refX > refXMax - MENU_CATEGORIE_DEPLACEMENT_MINIMUM)
+		axeX->setVal(axeX->getVal()-PRECISION_VALEUR_AXE_TOUCHE/20);
+	if(refX < refXMin + MENU_CATEGORIE_DEPLACEMENT_MINIMUM)
+		axeX->setVal(axeX->getVal()+PRECISION_VALEUR_AXE_TOUCHE/20);
+
+	// On affiche
+	for(int i=0; i<this->categories.size(); i++)
+	{
+		// On calcul la taille
+		int tailleB = this->tailleBouton;
+		if(i == categorieSelect)
+			tailleB = this->tailleBouton*(NIVEAU_ZOOM_BOUTON_ACTIF+1);
+
+		// On calcul sa position
+		SDL_Rect pos; // (X.Y)=position image sur l'écran, (W.H)=taille de l'image sur l'écran (sans prendre compte de la coupure)
+		pos.y = this->positionY + (this->tailleBouton*(NIVEAU_ZOOM_BOUTON_ACTIF+1)/2);
+		pos.x = refX+(tailleB/2);
+		pos.w = tailleB;
+		pos.h = tailleB;
+		refX += tailleB;
+
+		// On regarde si on doit l'afficher
+		if(pos.x < this->tailleX+this->positionX+(tailleB/2) && pos.x > (this->positionX-(tailleB/2)))
+		{
+			// S'il est aux extrémités, on met à jour Pos2
+			SDL_Rect pos2; // (X.Y)=position de la zone à prendre sur l'image, (W.H)=taille de la zone à prendre sur l'image
+			pos2.x = 0;
+			pos2.y = 0;
+			pos2.w = tailleB;
+			pos2.h = tailleB;
+			// gauche
+			if(pos.x < this->positionX + (tailleB/2))
+			{
+				pos2.x = tailleB-((pos.x+(tailleB/2))-this->positionX);
+				pos2.y = 0;
+				pos2.w -= pos2.x;
+				pos2.h = tailleB;
+			}
+			// droite
+			if(pos.x > this->tailleX+this->positionX - (tailleB/2))
+			{
+				pos2.x = 0;
+				pos2.y = 0;
+				pos2.w = this->tailleX+this->positionX - (pos.x-(tailleB/2));
+				pos2.h = tailleB;
+			}
+
+			// Si sa position est dans les limites, on l'affiche
+			this->categories[i]->setTaille(this->tailleBouton);
+			this->categories[i]->afficher(&pos, (i == categorieSelect), 255, &pos2);
+		}
+	}
+	
 	// On dessine les boutons de la catégorie sélectionnée en tenant compte de la sélection
+	
+
+
+
 	// On affiche le nom et la description de la sélection
 	if(this->boutons.size()>this->boutonSelect)
 	{

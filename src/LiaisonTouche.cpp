@@ -24,7 +24,8 @@ void LiaisonTouche::nouvelEvenement(Touche* touche) // TODO : inhiber aussi T2
 	if(!this->touchePresente(touche))
 		return;
 
-	int valeur = touche->getValAxe(); // Valeur de min à max
+	int valeur = touche->getValAxe(true); // Valeur de min à max
+	valeur = (valeur - this->minT) * (this->maxTJ - this->minTJ) / (this->maxTJ - this->minT) + this->minTJ;
 
 	// Si c'est t1 et que t2 est null, on le traite normalement selon le mode
 	if(this->t2 == nullptr)
@@ -39,6 +40,21 @@ void LiaisonTouche::nouvelEvenement(Touche* touche) // TODO : inhiber aussi T2
 					this->tj->setVal(this->maxTJ);
 					this->tj->setEvent();
 				}
+				break;
+
+			case MODE_AXE_RELATIF:
+				if(this->inverserT1)
+					valeur = this->maxT - (valeur - this->minT);
+				this->tj->setVal(tj->getVal()+valeur);
+				SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "valeur LiaisonTouche : %d", valeur);
+				this->tj->setEvent();
+				break;
+
+			case MODE_AXE_ABSOLUE:
+				if(this->inverserT1)
+					valeur = this->maxT - (valeur - this->minT);
+				this->tj->setVal(valeur);
+				this->tj->setEvent();
 				break;
 
 			default:

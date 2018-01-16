@@ -37,14 +37,14 @@ Controller::Controller(BundleTouche* persistant)
 	Touche* t = new Touche(-2, 1, TYPE_TOUCHE_MOLETTE); // Molette x
 	this->manetteSouris->ajoutTouche(t);
 	t->nom = "Molette X";
-	t->setValeursBrut(-100, 100);
+	t->setValeursBrut(-10, 10);
 	t->setValeurs(-PRECISION_VALEUR_AXE_TOUCHE, PRECISION_VALEUR_AXE_TOUCHE);
 	t->configure = true;
 
 	t = new Touche(-2, 2, TYPE_TOUCHE_MOLETTE); // Molette y
 	this->manetteSouris->ajoutTouche(t);
 	t->nom = "Molette Y";
-	t->setValeursBrut(-100, 100);
+	t->setValeursBrut(-10, 10);
 	t->setValeurs(-PRECISION_VALEUR_AXE_TOUCHE, PRECISION_VALEUR_AXE_TOUCHE);
 	t->configure = true;
 
@@ -343,7 +343,7 @@ void Controller::update()
 							{
 								this->toucheEcoutee->setNoTouche(1);
 								this->toucheEcoutee->setType(TYPE_TOUCHE_MOLETTE);
-								this->toucheEcoutee->setValAxe(event.motion.x);
+								this->toucheEcoutee->setValAxe(event.wheel.x);
 								this->toucheEcoutee->setInversion(true);
 							}
 						}
@@ -358,7 +358,7 @@ void Controller::update()
 							{
 								this->toucheEcoutee->setNoTouche(2);
 								this->toucheEcoutee->setType(TYPE_TOUCHE_MOLETTE);
-								this->toucheEcoutee->setValAxe(event.motion.y);
+								this->toucheEcoutee->setValAxe(event.wheel.y);
 								this->toucheEcoutee->setInversion(true);
 							}
 						}

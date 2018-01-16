@@ -319,6 +319,9 @@ int Affichage::init() // TODO : Ajouter tous les éléments à charger + image d
 		{
 			Bouton* b = new Bouton(fondC, this->renderer, TAILLE_ICONE_CONFIG_TOUCHE*this->tailleRef, "Catégorie persistante", "Ensemble des touches actionnables partout");
 			bts.push_back(b);
+			this->lock.lock();
+			this->boutons.push_back(b);
+			this->lock.unlock();
 		}
 		else
 		{
@@ -378,6 +381,9 @@ int Affichage::init() // TODO : Ajouter tous les éléments à charger + image d
 		{
 			Bouton* b = new Bouton(fondC, this->renderer, TAILLE_ICONE_CONFIG_TOUCHE*this->tailleRef, "Catégorie navigation", "Toutes les touches gérant la navigation dans les menus");
 			bts.push_back(b);
+			this->lock.lock();
+			this->boutons.push_back(b);
+			this->lock.unlock();
 		}
 		else
 		{
@@ -437,6 +443,9 @@ int Affichage::init() // TODO : Ajouter tous les éléments à charger + image d
 		{
 			Bouton* b = new Bouton(fondC, this->renderer, TAILLE_ICONE_CONFIG_TOUCHE*this->tailleRef, "Catégorie sélection angulaire", "Toutes les touches gérant la navigation dans les sélections angulaires");
 			bts.push_back(b);
+			this->lock.lock();
+			this->boutons.push_back(b);
+			this->lock.unlock();
 		}
 		else
 		{
@@ -496,6 +505,9 @@ int Affichage::init() // TODO : Ajouter tous les éléments à charger + image d
 		{
 			Bouton* b = new Bouton(fondC, this->renderer, TAILLE_ICONE_CONFIG_TOUCHE*this->tailleRef, "Catégorie plateau", "Toutes les touches utilisables sur l'écran du plateau");
 			bts.push_back(b);
+			this->lock.lock();
+			this->boutons.push_back(b);
+			this->lock.unlock();
 		}
 		else
 		{

@@ -39,10 +39,10 @@ bool BundleTouche::nouvelEvenement(Touche* touche)
 		}
 
 	// On filtre les appuies
-	if(touche->getType() == TYPE_TOUCHE_BOUTON && touche->getValAxe() > 0)
+	if(touche->getType() == TYPE_TOUCHE_BOUTON && touche->getValAxe(true) > 0)
 		return true;
 	// Si c'est un relâchement non inhibé, on envoie d'abord un appuie
-	if(touche->getType() == TYPE_TOUCHE_BOUTON && touche->getValAxe() == 0 && touche->actif())
+	if(touche->getType() == TYPE_TOUCHE_BOUTON && touche->getValAxe(true) == 0 && touche->actif())
 	{
 		touche->setValAxe(1);
 		for(int i=0; i<tempL.size(); i++)
@@ -55,6 +55,9 @@ bool BundleTouche::nouvelEvenement(Touche* touche)
 		for(int i=0; i<tempL.size(); i++)
 			if(!tempL[i]->composeT(touche))
 				tempL[i]->nouvelEvenement(touche);
+
+	// On remet la molette à 0 si besoin
+	touche->getValAxe(false);
 	// On retourne true
 	return true;
 }

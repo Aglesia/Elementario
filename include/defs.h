@@ -152,6 +152,8 @@
 #define MENU_COULEUR_TEXTE_G 255
 #define MENU_COULEUR_TEXTE_B 255
 
+#define MENU_CATEGORIE_DEPLACEMENT_MINIMUM 32 // Nombre de pixels minimum de déplacement des icônes de catégorie
+
 // Affichage en cours
 #define MODE_AFFICHAGE_CHARGEMENT 0
 #define MODE_AFFICHAGE_CONFIG_TOUCHES_CATEGORIES 1

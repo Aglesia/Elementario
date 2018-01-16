@@ -59,6 +59,8 @@ class Menu
 		int tailleBouton = 0; // Taille d'un bouton (taille*taille), en pixels
 		int selectionX = 0; // Position du pointeur de sélection (zone : écran complet)
 		int selectionY = 0; // Position du pointeur de sélection (zone : écran complet)
+		int deplacementBoutonsX = 0; // Position du pointeur de déplacement, pour les catégories (zone : écran complet)
+		int deplacementBoutonsY = 0; // Position du pointeur de déplacement, pour les boutons (zone : écran complet)
 		int boutonSelect = 0; // Bouton actuellement sélectionné (négatif pour catégorie)
 		int categorieSelect = 0; // Catégorie actuellement sélectionnée
 		int nbBtParLigne = 0; // Nombre de boutons par lignes
