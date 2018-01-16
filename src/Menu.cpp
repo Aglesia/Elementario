@@ -123,7 +123,7 @@ int Menu::update(int ticks) // TODO
 	fond.x = this->positionX+this->tailleX;
 	SDL_RenderCopy(this->renderer, fondSombre, NULL, &fond);
 	// Séparation
-	fond.y = this->positionY+(this->tailleBouton*(NIVEAU_ZOOM_BOUTON_ACTIF+1)); // TODO : prendre en compte l'apaisseur de la bordure
+	fond.y = this->positionY+this->tailleBouton; // TODO : prendre en compte l'appaisseur de la bordure
 	fond.x = this->positionX+4;
 	fond.w = this->tailleX-8;
 	fond.h = 2;
