@@ -176,12 +176,22 @@ static int thread_Init(void* data) // TODO : Toutes les touches de base
 			t->var->bundles[BUNDLE_NAVIGATION]->ajouterLiaison(lt);
 		}
 
-		Touche* touche2 = t->c->getTouche(-2, 1, TYPE_TOUCHE_MOLETTE); // Molette Y
-		touche = t->c->getTouche(-1, SDLK_LCTRL, TYPE_TOUCHE_BOUTON); // Molette Y
+		Touche* touche2 = t->c->getTouche(-2, 2, TYPE_TOUCHE_MOLETTE); // Molette Y
+		touche = t->c->getTouche(-1, SDLK_LCTRL, TYPE_TOUCHE_BOUTON); // Contrôle Gauche
 		if(touche && touche2)
 		{
-			LiaisonTouche* lt = new LiaisonTouche(t->var->touchesJeu[TOUCHE_NAVIGATION_DEPLACER_AXE_HAUT_BAS], touche, touche2);
+			LiaisonTouche* lt = new LiaisonTouche(t->var->touchesJeu[TOUCHE_NAVIGATION_DEPLACER_AXE_GAUCHE_DROITE], touche, touche2);
 			lt->setMode(MODE_AXE_RELATIF);
+			lt->setMinMaxT(-255, 255);
+			t->var->bundles[BUNDLE_NAVIGATION]->ajouterLiaison(lt);
+		}
+
+		touche2 = t->c->getTouche(-2, 1, TYPE_TOUCHE_JOYSTIC); // Pointeur X
+		touche = t->c->getTouche(-2, 1, TYPE_TOUCHE_BOUTON); // Cclic gauche
+		if(touche && touche2)
+		{
+			LiaisonTouche* lt = new LiaisonTouche(t->var->touchesJeu[TOUCHE_NAVIGATION_DEPLACER_AXE_GAUCHE_DROITE], touche, touche2);
+			lt->setMode(MODE_AXE_ABSOLUE_CLIC);
 			t->var->bundles[BUNDLE_NAVIGATION]->ajouterLiaison(lt);
 		}
 	}

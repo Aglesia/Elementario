@@ -131,6 +131,8 @@
 #define MODE_APPUIE_UNIQUE 1 // Enregistre les appuies, mais pas les relâchements
 #define MODE_AXE_RELATIF 2 // Ajoute ou soustrait à la valeur actuelle (ex : la vitesse de déplacement correspond à la valeur du joystic)
 #define MODE_AXE_ABSOLUE 3 // Remplace tout simplement la valeur actuelle (ex : la position du plateau correspond à la valeur du joystic)
+#define MODE_AXE_RELATIF_CLIC 4 // Correspond à une translation relative depuis le moment où on a cliqué/appuyé sur la touche (ex : la vitesse de déplacement correspond à l'écart entre le lieu du clic et now)
+#define MODE_AXE_ABSOLUE_CLIC 5 // Correspond à une translation absolue depuis le moment où on a cliqué/appuyé sur la touche (ex : la translation finale correspond à l'écart entre le lieu du clic et now)
 
 // Jeu
 #define TEMPS_TICKS 16 // Nombre de ms entre chaque tick, ici Approx. 60t/sec

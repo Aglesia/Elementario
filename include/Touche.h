@@ -39,8 +39,8 @@ class Touche
 		int valeur = 0; // Valeur de min à max
 		int minBrut = -32768; // valeur min rélle
 		int maxBrut = 32768; // valeur max rélle
-		int min = -255; // Valeur min virtuelle
-		int max = 255; // Valeur max virtuelle
+		int min = -PRECISION_VALEUR_AXE_TOUCHE; // Valeur min virtuelle
+		int max = PRECISION_VALEUR_AXE_TOUCHE; // Valeur max virtuelle
 		bool inversion = false; // Inverser le sens de l'axe (de max à min)
 		int noManette = 0; // Numéro de la manette à laquelle appartient la touche
 		int noTouche = 0; // Numéro de la touche sur la manette

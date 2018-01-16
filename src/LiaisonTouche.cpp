@@ -18,18 +18,21 @@ LiaisonTouche::LiaisonTouche(ToucheJeu* tj, Touche* t1, Touche* t2)
 
 LiaisonTouche::~LiaisonTouche(){}
 
-void LiaisonTouche::nouvelEvenement(Touche* touche) // TODO : inhiber aussi T2
+void LiaisonTouche::nouvelEvenement(Touche* touche)
 {
 	// On regarde si ça nous concerne
 	if(!this->touchePresente(touche))
 		return;
 
-	int valeur = touche->getValAxe(true); // Valeur de min à max
-	valeur = (valeur - this->minT) * (this->maxTJ - this->minTJ) / (this->maxTJ - this->minT) + this->minTJ;
+	if(!touche->actif())
+		return;
+
+	int valeur = (touche->getValAxe(true) - this->minT) * (this->maxTJ - this->minTJ) / (this->maxT - this->minT) + this->minTJ;
 
 	// Si c'est t1 et que t2 est null, on le traite normalement selon le mode
 	if(this->t2 == nullptr)
 	{
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,  "Gestion de la touche %s -> %s, type1", touche->nom.c_str(), this->tj->getNom().c_str());
 		switch(this->mode)
 		{
 			case MODE_APPUIE_UNIQUE:
@@ -46,7 +49,6 @@ void LiaisonTouche::nouvelEvenement(Touche* touche) // TODO : inhiber aussi T2
 				if(this->inverserT1)
 					valeur = this->maxT - (valeur - this->minT);
 				this->tj->setVal(tj->getVal()+valeur);
-				SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "valeur LiaisonTouche : %d", valeur);
 				this->tj->setEvent();
 				break;
 
@@ -65,7 +67,88 @@ void LiaisonTouche::nouvelEvenement(Touche* touche) // TODO : inhiber aussi T2
 		}
 	}
 	// Si c'est t1 et que t2 n'est pas null, on marque la valeur actuelle de t2
+	else if(this->t1 == touche)
+	{
+		valeur = touche->getValAxe(true);
+		if(this->inverserT1)
+			valeur = this->maxT - (valeur - this->minT);
+
+		if(valeur && this->etatEvent == 0)
+		{
+			SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,  "Activation de la touche %s -> %s, type2", touche->nom.c_str(), this->tj->getNom().c_str());
+			this->valeurAxeT2 = this->t2->getValAxe();
+			this->valeurAxeTJ = this->tj->getVal();
+			this->etatEvent = 1;
+		}
+		else if(!valeur)
+		{
+			if(etatEvent == 2)
+				touche->desactiver();
+			SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,  "Désactivation de la touche %s -> %s, type2", touche->nom.c_str(), this->tj->getNom().c_str());
+			this->etatEvent = 0;
+		}
+	}
 	// Si c'est t2, on regarde si t1 est enclanché (>0) et on désactive t1 et t2 si besoin
+	else
+	{
+		if(this->etatEvent > 0)
+		{
+			SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,  "Gestion de la touche %s -> %s, type3", touche->nom.c_str(), this->tj->getNom().c_str());
+			etatEvent = 2;
+			// On indique de ne pas prendre en compte t1 ni t2 pour les autres
+			touche->desactiver();
+			this->t1->desactiver();
+
+			switch(this->mode)
+			{
+				case MODE_APPUIE_UNIQUE:
+					if(this->inverserT2)
+						valeur = (valeur == 0)?1:0;
+					if(valeur>0)
+					{
+						this->tj->setVal(this->maxTJ);
+						this->tj->setEvent();
+					}
+					break;
+
+				case MODE_AXE_RELATIF:
+					if(this->inverserT2)
+						valeur = this->maxT - (valeur - this->minT);
+					this->tj->setVal(tj->getVal()+valeur);
+					this->tj->setEvent();
+					// TODO : Ajouter un rappel dans le controller pour être rappelé en boucle même si la valeur ne change pas
+					break;
+
+				case MODE_AXE_ABSOLUE:
+					if(this->inverserT2)
+						valeur = this->maxT - (valeur - this->minT);
+					this->tj->setVal(valeur);
+					this->tj->setEvent();
+					break;
+
+				case MODE_AXE_RELATIF_CLIC:
+					if(this->inverserT2)
+						valeur = this->maxT - (valeur - this->minT);
+					this->tj->setVal(this->tj->getVal()-this->valeurAxeT2+valeur);
+					this->tj->setEvent();
+					// TODO : Ajouter un rappel dans le controller pour être rappelé en boucle même si la valeur ne change pas
+					break;
+
+				case MODE_AXE_ABSOLUE_CLIC:
+					if(this->inverserT2)
+						valeur = this->maxT - (valeur - this->minT);
+					this->tj->setVal(this->valeurAxeTJ-this->valeurAxeT2+valeur);
+					this->tj->setEvent();
+					break;
+
+				default:
+					if(this->inverserT2)
+						valeur = this->maxT - (valeur - this->minT);
+					this->tj->setVal((valeur)?this->maxTJ:this->minTJ);
+					this->tj->setEvent();
+			}
+		}
+	}
 }
 
 bool LiaisonTouche::touchePresente(Touche* touche)

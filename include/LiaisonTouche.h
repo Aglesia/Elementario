@@ -37,8 +37,9 @@ class LiaisonTouche
 		ToucheJeu* tj; // ToucheJeu à modifier
 		Touche* t1; // Touche à prendre en compte
 		Touche* t2; // Seconde touche à prendre en compte, pour les touches composées (un axe, normalement)
-		int valeurAxeT1 = 0; // Dernière valeur de t1
+		int etatEvent = 0; // Etat actuel de l'enchainement d'évènements (0=idle, 1=t1 actif, 2=t2 a bougé)
 		int valeurAxeT2 = 0; // Valeur de t2 lors de l'appuie sur t1
+		int valeurAxeTJ = 0; // Valeur de tJ lors de l'appuie sur t1
 		bool actif = false; // Indique si l'action de t1 a été pris en compte, et qu'il est maintenant inhibé. Si oui, les mouvements de t2 sont pris en compte
 		int mode = MODE_INCONNU; // Mode de liaison avec la touche virtuelle
 		bool inverserT1 = false; // Inverser le sens de T1

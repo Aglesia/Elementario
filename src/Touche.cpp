@@ -70,7 +70,7 @@ void Touche::setValAxe(int valeurBrut, bool ignoreInversion)
 		this->valeur = this->max - val;
 	}
 
-	SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "val %s : %d (brut=%d, min/max=%d/%d)", this->nom.c_str(), this->valeur, valeurBrut, this->minBrut, this->maxBrut);
+	//SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "val %s : %d (brut=%d, min/max=%d/%d)", this->nom.c_str(), this->valeur, valeurBrut, this->minBrut, this->maxBrut);
 	this->lock.unlock();
 }
 
@@ -108,6 +108,7 @@ void Touche::setValeurs(int min, int max)
 		this->inversion = true;
 	}
 	this->lock.unlock();
+	SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Modification des limites virtuelles de %s : (%d.%d)", this->nom.c_str(), this->min, this->max);
 }
 
 /**

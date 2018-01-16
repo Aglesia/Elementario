@@ -30,31 +30,31 @@ bool BundleTouche::nouvelEvenement(Touche* touche)
 		return false;
 
 	// On fait passer la touche par toutes les touches composées
-	bool compose = false;
 	for(int i=0; i<tempL.size(); i++)
 		if(tempL[i]->composeT(touche))
-		{
-			compose = true;
 			tempL[i]->nouvelEvenement(touche);
-		}
 
-	// On filtre les appuies
-	if(touche->getType() == TYPE_TOUCHE_BOUTON && touche->getValAxe(true) > 0)
-		return true;
-	// Si c'est un relâchement non inhibé, on envoie d'abord un appuie
-	if(touche->getType() == TYPE_TOUCHE_BOUTON && touche->getValAxe(true) == 0 && touche->actif())
-	{
-		touche->setValAxe(1);
-		for(int i=0; i<tempL.size(); i++)
-			if(!tempL[i]->composeT(touche))
-				tempL[i]->nouvelEvenement(touche);
-		touche->setValAxe(0);
-	}
-	// Si la touche n'est pas inhibée, on la fait passer dans les autres touches
+	// Si la touche n'est pas inhibée
 	if(touche->actif())
-		for(int i=0; i<tempL.size(); i++)
-			if(!tempL[i]->composeT(touche))
-				tempL[i]->nouvelEvenement(touche);
+	{
+		// On filtre les appuies
+		if(touche->getType() == TYPE_TOUCHE_BOUTON && touche->getValAxe(true) > 0)
+			return true;
+		// Si c'est un relâchement non inhibé, on envoie d'abord un appuie
+		if(touche->getType() == TYPE_TOUCHE_BOUTON && touche->getValAxe(true) == 0 && touche->actif())
+		{
+			touche->setValAxe(1);
+			for(int i=0; i<tempL.size(); i++)
+				if(!tempL[i]->composeT(touche))
+					tempL[i]->nouvelEvenement(touche);
+			touche->setValAxe(0);
+		}
+		// Si la touche n'est pas inhibée, on la fait passer dans les autres touches
+		if(touche->actif())
+			for(int i=0; i<tempL.size(); i++)
+				if(!tempL[i]->composeT(touche))
+					tempL[i]->nouvelEvenement(touche);
+	}
 
 	// On remet la molette à 0 si besoin
 	touche->getValAxe(false);
