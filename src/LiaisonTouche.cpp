@@ -24,21 +24,20 @@ void LiaisonTouche::nouvelEvenement(Touche* touche)
 	if(!this->touchePresente(touche))
 		return;
 
-	if(!touche->actif())
-		return;
-
 	int valeur = (touche->getValAxe(true) - this->minT) * (this->maxTJ - this->minTJ) / (this->maxT - this->minT) + this->minTJ;
+	printf("JBHFBEKBIKBEVKBEV, axe = %d\n", valeur);
 
 	// Si c'est t1 et que t2 est null, on le traite normalement selon le mode
 	if(this->t2 == nullptr)
 	{
-		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,  "Gestion de la touche %s -> %s, type1", touche->nom.c_str(), this->tj->getNom().c_str());
+		if(!touche->actif())
+			return;
 		switch(this->mode)
 		{
 			case MODE_APPUIE_UNIQUE:
 				if(this->inverserT1)
 					valeur = (valeur == 0)?1:0;
-				if(valeur>0)
+				if(valeur!=0)
 				{
 					this->tj->setVal(this->maxTJ);
 					this->tj->setEvent();
@@ -75,7 +74,6 @@ void LiaisonTouche::nouvelEvenement(Touche* touche)
 
 		if(valeur && this->etatEvent == 0)
 		{
-			SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,  "Activation de la touche %s -> %s, type2", touche->nom.c_str(), this->tj->getNom().c_str());
 			this->valeurAxeT2 = this->t2->getValAxe();
 			this->valeurAxeTJ = this->tj->getVal();
 			this->etatEvent = 1;
@@ -84,7 +82,6 @@ void LiaisonTouche::nouvelEvenement(Touche* touche)
 		{
 			if(etatEvent == 2)
 				touche->desactiver();
-			SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,  "Désactivation de la touche %s -> %s, type2", touche->nom.c_str(), this->tj->getNom().c_str());
 			this->etatEvent = 0;
 		}
 	}
@@ -93,7 +90,6 @@ void LiaisonTouche::nouvelEvenement(Touche* touche)
 	{
 		if(this->etatEvent > 0)
 		{
-			SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,  "Gestion de la touche %s -> %s, type3", touche->nom.c_str(), this->tj->getNom().c_str());
 			etatEvent = 2;
 			// On indique de ne pas prendre en compte t1 ni t2 pour les autres
 			touche->desactiver();
@@ -104,7 +100,7 @@ void LiaisonTouche::nouvelEvenement(Touche* touche)
 				case MODE_APPUIE_UNIQUE:
 					if(this->inverserT2)
 						valeur = (valeur == 0)?1:0;
-					if(valeur>0)
+					if(valeur!=0)
 					{
 						this->tj->setVal(this->maxTJ);
 						this->tj->setEvent();
@@ -116,7 +112,7 @@ void LiaisonTouche::nouvelEvenement(Touche* touche)
 						valeur = this->maxT - (valeur - this->minT);
 					this->tj->setVal(tj->getVal()+valeur);
 					this->tj->setEvent();
-					// TODO : Ajouter un rappel dans le controller pour être rappelé en boucle même si la valeur ne change pas
+					touche->appeller(true); // On rappelle la touche la fois suivante
 					break;
 
 				case MODE_AXE_ABSOLUE:
@@ -124,6 +120,7 @@ void LiaisonTouche::nouvelEvenement(Touche* touche)
 						valeur = this->maxT - (valeur - this->minT);
 					this->tj->setVal(valeur);
 					this->tj->setEvent();
+					touche->appeller(true);
 					break;
 
 				case MODE_AXE_RELATIF_CLIC:
@@ -131,7 +128,7 @@ void LiaisonTouche::nouvelEvenement(Touche* touche)
 						valeur = this->maxT - (valeur - this->minT);
 					this->tj->setVal(this->tj->getVal()-this->valeurAxeT2+valeur);
 					this->tj->setEvent();
-					// TODO : Ajouter un rappel dans le controller pour être rappelé en boucle même si la valeur ne change pas
+					touche->appeller(true);
 					break;
 
 				case MODE_AXE_ABSOLUE_CLIC:
@@ -139,6 +136,7 @@ void LiaisonTouche::nouvelEvenement(Touche* touche)
 						valeur = this->maxT - (valeur - this->minT);
 					this->tj->setVal(this->valeurAxeTJ-this->valeurAxeT2+valeur);
 					this->tj->setEvent();
+					touche->appeller(true);
 					break;
 
 				default:
@@ -170,7 +168,7 @@ bool LiaisonTouche::toucheJeuPresente(ToucheJeu* touche)
 void LiaisonTouche::setMode(unsigned int mode)
 {
 	this->mode = mode;
-	if(mode>3)
+	if(mode>5)
 		this->mode = MODE_INCONNU;
 }
 

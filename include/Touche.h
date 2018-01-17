@@ -30,6 +30,7 @@ class Touche
 		void activer();
 		void desactiver();
 		bool actif();
+		bool appeller(bool val=false);
 
 		bool configure = false; // Indique si le bouton est configuré (calibré, etc...)
 		std::string nom; // Nom de la touche d'après SDL
@@ -46,6 +47,7 @@ class Touche
 		int noTouche = 0; // Numéro de la touche sur la manette
 		int typeTouche = 0; // Type d'input (bouton/axe/molette, croix directionnelle)
 		bool desactive = false; // Indique si l'action a été interceptée et est inhibée
+		bool appel = false; // Indique au contrôleur s'il doit emmettre un évènement sur la touche, même s'il n'y en a pas
 };
 
 #endif

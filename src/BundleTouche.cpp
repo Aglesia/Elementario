@@ -28,6 +28,7 @@ bool BundleTouche::nouvelEvenement(Touche* touche)
 	// S'il n'y en a pas, on retourne false
 	if(tempL.size() == 0)
 		return false;
+	touche->activer();
 
 	// On fait passer la touche par toutes les touches composées
 	for(int i=0; i<tempL.size(); i++)

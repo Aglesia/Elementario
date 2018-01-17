@@ -88,6 +88,46 @@ int Menu::update(int ticks) // TODO
 		this->tailleBouton = tailleX;
 
 	// On calcul la nouvelle sélection, et les nouveaux emplacements
+	// Catégorie précédente
+	if(this->touches[TOUCHE_NAVIGATION_SELECTION_BOUTON_CATEGORIE_PRECEDENTE]->getVal()>0)
+	{
+		this->touches[TOUCHE_NAVIGATION_SELECTION_BOUTON_CATEGORIE_PRECEDENTE]->setVal(0);
+		// On change la catégorie
+		this->categorieSelect--;
+		if(this->categorieSelect<0)
+			this->categorieSelect = 0;
+		// On place la sélection du bouton à 0
+		this->boutonSelect = 0;
+	}
+	// Catégorie suivante
+	if(this->touches[TOUCHE_NAVIGATION_SELECTION_BOUTON_CATEGORIE_SUIVANTE]->getVal()>0)
+	{
+		this->touches[TOUCHE_NAVIGATION_SELECTION_BOUTON_CATEGORIE_SUIVANTE]->setVal(0);
+		// On change la catégorie
+		this->categorieSelect++;
+		if(this->categorieSelect>=this->categories.size())
+			this->categorieSelect = this->categories.size()-1;
+		// On place la sélection du bouton à 0
+		this->boutonSelect = 0;
+	}
+	// Bouton précédent
+	if(this->touches[TOUCHE_NAVIGATION_SELECTION_BOUTON_GAUCHE_DROITE]->getVal()<0)
+	{
+		this->touches[TOUCHE_NAVIGATION_SELECTION_BOUTON_GAUCHE_DROITE]->setVal(0);
+		// On change le bouton
+		this->boutonSelect--;
+		if(this->boutonSelect < 0)
+			this->boutonSelect = 0;
+	}
+	// Bouton suivant
+	if(this->touches[TOUCHE_NAVIGATION_SELECTION_BOUTON_GAUCHE_DROITE]->getVal()>0)
+	{
+		this->touches[TOUCHE_NAVIGATION_SELECTION_BOUTON_GAUCHE_DROITE]->setVal(0);
+		// On change le bouton
+		this->boutonSelect++;
+		if(this->boutonSelect>=this->nbBoutons[this->categorieSelect])
+			this->boutonSelect = this->nbBoutons[this->categorieSelect]-1;
+	}
 
 	// On dessine le menu vide
 	SDL_Rect fond;
@@ -199,6 +239,75 @@ int Menu::update(int ticks) // TODO
 	}
 	
 	// On dessine les boutons de la catégorie sélectionnée en tenant compte de la sélection
+	int tailleBt = this->tailleBouton*(1+NIVEAU_ZOOM_BOUTON_ACTIF);
+	int decalageX = (tailleBt*3)/4;
+	int tailleX = 0;
+	int tailleY = 0;
+	int xRef = 0;
+	int yRef = 0;
+
+	// X
+	xRef = tailleBt;
+	this->nbBtParLigne = 0;
+	for(int i=0; xRef<this->tailleX; i++)
+	{
+		this->nbBtParLigne++;
+		xRef += decalageX;
+	}
+	tailleX = xRef - decalageX;
+	xRef = this->positionX+((this->tailleX-tailleX)/2);
+	// Y
+	tailleY = tailleBt/2;
+	for(int i=0; i<this->nbBoutons[categorieSelect]; i += this->nbBtParLigne)
+		tailleY += tailleBt;
+	yRef = this->positionY+tailleBt;
+	int tailleZoneY = this->tailleY-tailleBt-(MENU_TAILLE_BANDE_TEXTE*this->tailleBouton);
+	if(tailleZoneY > tailleY)
+		yRef = this->positionY+tailleBt+(tailleZoneY/2)-(tailleY/2);
+
+	int refYMin = yRef-MENU_CATEGORIE_DEPLACEMENT_MINIMUM;
+	int refYMax = yRef+MENU_CATEGORIE_DEPLACEMENT_MINIMUM;
+	if(tailleY-tailleZoneY>0)
+		refYMin -= (tailleY-tailleZoneY);
+
+	// On met à jour les valeurs selon les inputs
+	
+	// On calcul le numéro absolu du premier bouton du menu
+	int btSelect = 0;
+	for(int i=0; i<categorieSelect; i++)
+		btSelect += nbBoutons[i];
+
+	// On affiche l'ensemble des boutons
+	for(int noLigne = 0, noBouton = 0; noBouton<this->nbBoutons[categorieSelect]; noLigne++)
+	{
+		bool decaler = false;
+		for(int noBoutonLigne = 0; noBoutonLigne<this->nbBtParLigne && noBouton<this->nbBoutons[categorieSelect]; noBoutonLigne++)
+		{
+			// On calcul la position
+			SDL_Rect p1;
+			p1.x=xRef+(decalageX*noBoutonLigne)+(tailleBt/2);
+			p1.y=yRef+(noLigne*tailleBt)+(tailleBt/2);
+			if(decaler)
+				p1.y+=tailleBt/2;
+			p1.w=this->tailleBouton;
+			p1.h=this->tailleBouton;
+			decaler = !decaler;
+
+			// On calcul la découpe si besoin
+			SDL_Rect p2;
+			p2.x=0;
+			p2.y=0;
+			p2.w=this->tailleBouton;
+			p2.h=this->tailleBouton;
+			
+			// On affiche le bouton
+			this->boutons[btSelect+noBouton]->afficher(&p1, (noBouton == this->boutonSelect), &p2);
+			noBouton++;
+		}
+	}
+	
+
+	
 	
 
 
@@ -228,8 +337,9 @@ int Menu::update(int ticks) // TODO
 		SDL_DestroyTexture(fondSombre);
 
 		// On ajoute le titre
+		btSelect += this->boutonSelect;
 		SDL_Color couleurTexte = {MENU_COULEUR_TEXTE_R, MENU_COULEUR_TEXTE_G, MENU_COULEUR_TEXTE_B, 255};
-		SDL_Surface* texte = TTF_RenderUTF8_Blended(this->policeMenu, this->boutons[this->boutonSelect]->getNom().c_str(), couleurTexte);
+		SDL_Surface* texte = TTF_RenderUTF8_Blended(this->policeMenu, this->boutons[btSelect]->getNom().c_str(), couleurTexte);
 		if(texte != nullptr)
 		{
 			// On calcul sa position et on l'affiche
@@ -244,10 +354,10 @@ int Menu::update(int ticks) // TODO
 			SDL_DestroyTexture(texteT);
 		}
 		else
-			SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,  "Impossible de créer le texte : %s\n", TTF_GetError());
+			SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Impossible de créer le texte : %s", TTF_GetError());
 
 		// On ajoute le texte
-		texte = TTF_RenderUTF8_Blended(this->policeMenu, this->boutons[this->boutonSelect]->getDescription().c_str(), couleurTexte);
+		texte = TTF_RenderUTF8_Blended(this->policeMenu, this->boutons[btSelect]->getDescription().c_str(), couleurTexte);
 		if(texte != nullptr)
 		{
 			// On calcul sa position et on l'affiche
@@ -262,14 +372,6 @@ int Menu::update(int ticks) // TODO
 			SDL_DestroyTexture(texteT);
 		}
 	}
-
-	/*int selectionX = 0; // Position du pointeur de sélection (zone : écran complet)
-	int selectionY = 0; // Position du pointeur de sélection (zone : écran complet)
-	int boutonSelect = 0; // Bouton actuellement sélectionné
-	int categorieSelect = 0; // Catégorie actuellement sélectionnée
-	int result = 0; // Dernier résultat s'il y'en a un
-	int ticksAnimation = 0; // nbTicks depuis le début de l'animation
-	int typeAnimation = 0; // 0 = aucune animation, 1 = ouverture, 2 = fermeture (opacité +/-)*/
 
 	return 0;
 }

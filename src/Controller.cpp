@@ -605,6 +605,26 @@ void Controller::update()
 		}
 		this->lock.unlock();
 	}
+
+	// S'il y a des touches à rappeller, on emmet un évènement
+	// Souris
+	std::vector<Touche*> t = this->manetteSouris->getTouches();
+		for(int j=0; j<t.size(); j++)
+			if(t[j]->appeller())
+				this->event(t[j]);
+	// Clavier
+	t = this->manetteClavier->getTouches();
+		for(int j=0; j<t.size(); j++)
+			if(t[j]->appeller())
+				this->event(t[j]);
+	// Autres manettes
+	for(int i=0; i<this->manettes.size(); i++)
+	{
+		t = this->manettes[i]->getTouches();
+		for(int j=0; j<t.size(); j++)
+			if(t[j]->appeller())
+				this->event(t[j]);
+	}
 }
 
 bool Controller::quitter()

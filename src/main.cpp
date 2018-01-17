@@ -54,6 +54,8 @@ static int thread_Init(void* data) // TODO : Toutes les touches de base
 	t->var->touchesJeu[TOUCHE_NAVIGATION_VALIDER] = new ToucheJeu("valider", "Valide la sélection actuelle, le bouton actuellement sélectionné", 0, 0, 1);
 	t->var->touchesJeu[TOUCHE_NAVIGATION_RETOUR] = new ToucheJeu("annuler", "Annule le menu et reviens à l'écran précédent", 0, 0, 1);
 	t->var->touchesJeu[TOUCHE_NAVIGATION_AVANCE] = new ToucheJeu("avancé", "Accède à des options avancées ou des infos, pour la sélection actuelle", 0, 0, 1);
+	t->var->touchesJeu[TOUCHE_NAVIGATION_SELECTION_BOUTON_CATEGORIE_PRECEDENTE] = new ToucheJeu("catégorie précédente", "Sélectionne la catégorie précédente, dans les menus", 0, 0, 1);
+	t->var->touchesJeu[TOUCHE_NAVIGATION_SELECTION_BOUTON_CATEGORIE_SUIVANTE] = new ToucheJeu("catégorie suivante", "Sélectionne la catégorie suivante, dans les menus", 0, 0, 1);
 
 	t->var->touchesJeu[TOUCHE_ANGULAIRE_BOUTON_ANGLE] = new ToucheJeu("angle (bouton)", "sélectionne le bouton suivant/précédent", 0, -1, 1);
 	t->var->touchesJeu[TOUCHE_ANGULAIRE_AXE_ANGLE] = new ToucheJeu("angle (axe)", "Angle actuel du joystic, pour sélectionner le bouton correspondant", 0, 0, 360);
@@ -76,6 +78,7 @@ static int thread_Init(void* data) // TODO : Toutes les touches de base
 	// Sinon on crée les touches de base
 	//else
 	{
+		// Plein écran
 		Touche* touche = t->c->getTouche(-1, SDLK_F11, TYPE_TOUCHE_BOUTON); // plein écran
 		if(touche)
 		{
@@ -84,6 +87,7 @@ static int thread_Init(void* data) // TODO : Toutes les touches de base
 			t->var->bundles[BUNDLE_PERSISTANT]->ajouterLiaison(lt);
 		}
 
+		// Sélect bouton haut
 		touche = t->c->getTouche(-1, SDLK_UP, TYPE_TOUCHE_BOUTON);
 		if(touche)
 		{
@@ -93,6 +97,7 @@ static int thread_Init(void* data) // TODO : Toutes les touches de base
 			t->var->bundles[BUNDLE_NAVIGATION]->ajouterLiaison(lt);
 		}
 
+		// Select bouton bas
 		touche = t->c->getTouche(-1, SDLK_DOWN, TYPE_TOUCHE_BOUTON);
 		if(touche)
 		{
@@ -102,6 +107,7 @@ static int thread_Init(void* data) // TODO : Toutes les touches de base
 			t->var->bundles[BUNDLE_NAVIGATION]->ajouterLiaison(lt);
 		}
 
+		// Select bouton gauche
 		touche = t->c->getTouche(-1, SDLK_LEFT, TYPE_TOUCHE_BOUTON);
 		if(touche)
 		{
@@ -111,6 +117,7 @@ static int thread_Init(void* data) // TODO : Toutes les touches de base
 			t->var->bundles[BUNDLE_NAVIGATION]->ajouterLiaison(lt);
 		}
 
+		// Select bouton droit
 		touche = t->c->getTouche(-1, SDLK_RIGHT, TYPE_TOUCHE_BOUTON);
 		if(touche)
 		{
@@ -120,6 +127,27 @@ static int thread_Init(void* data) // TODO : Toutes les touches de base
 			t->var->bundles[BUNDLE_NAVIGATION]->ajouterLiaison(lt);
 		}
 
+		// Catégorie précédente
+		touche = t->c->getTouche(-1, SDLK_a, TYPE_TOUCHE_BOUTON);
+		if(touche)
+		{
+			LiaisonTouche* lt = new LiaisonTouche(t->var->touchesJeu[TOUCHE_NAVIGATION_SELECTION_BOUTON_CATEGORIE_PRECEDENTE], touche);
+			lt->setMode(MODE_APPUIE_UNIQUE);
+			lt->setMinMaxTJ(0, 1);
+			t->var->bundles[BUNDLE_NAVIGATION]->ajouterLiaison(lt);
+		}
+
+		// Catégorie suivante
+		touche = t->c->getTouche(-1, SDLK_z, TYPE_TOUCHE_BOUTON);
+		if(touche)
+		{
+			LiaisonTouche* lt = new LiaisonTouche(t->var->touchesJeu[TOUCHE_NAVIGATION_SELECTION_BOUTON_CATEGORIE_SUIVANTE], touche);
+			lt->setMode(MODE_APPUIE_UNIQUE);
+			lt->setMinMaxTJ(0, 1);
+			t->var->bundles[BUNDLE_NAVIGATION]->ajouterLiaison(lt);
+		}
+
+		// Valider
 		touche = t->c->getTouche(-1, SDLK_RETURN, TYPE_TOUCHE_BOUTON);
 		if(touche)
 		{
@@ -128,6 +156,7 @@ static int thread_Init(void* data) // TODO : Toutes les touches de base
 			t->var->bundles[BUNDLE_NAVIGATION]->ajouterLiaison(lt);
 		}
 
+		// Valider
 		touche = t->c->getTouche(-1, SDLK_KP_ENTER, TYPE_TOUCHE_BOUTON);
 		if(touche)
 		{
@@ -187,10 +216,19 @@ static int thread_Init(void* data) // TODO : Toutes les touches de base
 		}
 
 		touche2 = t->c->getTouche(-2, 1, TYPE_TOUCHE_JOYSTIC); // Pointeur X
-		touche = t->c->getTouche(-2, 1, TYPE_TOUCHE_BOUTON); // Cclic gauche
+		touche = t->c->getTouche(-2, 1, TYPE_TOUCHE_BOUTON); // Clic gauche
 		if(touche && touche2)
 		{
 			LiaisonTouche* lt = new LiaisonTouche(t->var->touchesJeu[TOUCHE_NAVIGATION_DEPLACER_AXE_GAUCHE_DROITE], touche, touche2);
+			lt->setMode(MODE_AXE_ABSOLUE_CLIC);
+			t->var->bundles[BUNDLE_NAVIGATION]->ajouterLiaison(lt);
+		}
+
+		touche2 = t->c->getTouche(-2, 2, TYPE_TOUCHE_JOYSTIC); // Pointeur Y
+		touche = t->c->getTouche(-2, 1, TYPE_TOUCHE_BOUTON); // Clic gauche
+		if(touche && touche2)
+		{
+			LiaisonTouche* lt = new LiaisonTouche(t->var->touchesJeu[TOUCHE_NAVIGATION_DEPLACER_AXE_HAUT_BAS], touche, touche2);
 			lt->setMode(MODE_AXE_ABSOLUE_CLIC);
 			t->var->bundles[BUNDLE_NAVIGATION]->ajouterLiaison(lt);
 		}

@@ -27,3 +27,8 @@ Touche* Manette::getTouche(int noBouton, int typeBouton)
 		}
 	return ret;
 }
+
+std::vector<Touche*> Manette::getTouches()
+{
+	return this->touches;
+}

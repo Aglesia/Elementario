@@ -12,6 +12,7 @@ class Manette // TODO : Surcharger le copy-constructeur
 
 		void ajoutTouche(Touche* touche);
 		Touche* getTouche(int noBouton, int typeBouton);
+		std::vector<Touche*> getTouches();
 
 		int id; // Identifiant de la manette
 		SDL_Joystick* joy; // Adresse du périphérique

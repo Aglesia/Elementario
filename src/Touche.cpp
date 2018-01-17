@@ -233,3 +233,14 @@ bool Touche::actif()
 	this->lock.unlock();
 	return ret;
 }
+
+bool Touche::appeller(bool val)
+{
+	int ret;
+	this->lock.lock();
+	ret = this->appel;
+	this->appel = val;
+	this->lock.unlock();
+	return ret;
+
+}
