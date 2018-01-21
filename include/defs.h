@@ -44,13 +44,15 @@
 #define TAILLE_ICONE_CHARGEMENT 256
 #define TAILLE_ICONE_CONFIG_TOUCHE 128 // TODO : rendre relatif à la taille de référence (variable dans Affichage)
 // #define TAILLE_TEXTE_BOUTON 12 // Taille du titre des boutons
-#define NIVEAU_ZOOM_BOUTON_ACTIF 0.6 // multiplication de la taille du bouton sélectionné (%)
+#define NIVEAU_ZOOM_BOUTON_ACTIF 0.4 // multiplication de la taille du bouton sélectionné (%)
 #define NB_TICKS_ANIMATION_BOUTON 5 // Nombre de ticks entre le début et la fin de l'animation de (dé)zoom du bouton
 #define NB_TICKS_DEPLACEMENT_BOUTON 7 // Nombre de ticks entre le début et la fin de l'animation de déplacement
 #define NB_TICKS_DEPLACEMENT_ECRAN 15 // Nombre de ticks entre le début et la fin de la transition entre 2 écrans
+#define TAILLE_POINTEUR 16 // Taille du pointeur, si affiché à l'écran
 
 // Fichiers
 #define ICONE_FILENAME "data/image/icon.png"
+#define POINTEUR_FILENAME "data/image/pointer.png"
 #define IMAGE_FOND_FILENAME "data/image/fond.png"
 #define POLICE_CHARGEMENT_FILENAME "data/font/chargement.ttf"
 #define POLICE_MENU_FILENAME "data/font/chargement.ttf"
@@ -99,15 +101,15 @@
 #define BUNDLE_PLATEAU 3
 
 // Touches
-#define NB_TOUCHES_JEU 27 // DOIVENT RESTER TRIES
+#define NB_TOUCHES_JEU 25 // DOIVENT RESTER TRIES
 #define TOUCHE_PLEIN_ECRAN 0 // DOIT ETRE LE PREMIER DE LA CATEGORIE !!!
 #define TOUCHE_AFFICHAGE_FPS 1
-#define TOUCHE_NAVIGATION_DEPLACER_AXE_HAUT_BAS 2 // DOIT ETRE LE PREMIER DE LA CATEGORIE !!!
-#define TOUCHE_NAVIGATION_DEPLACER_AXE_GAUCHE_DROITE 3
-#define TOUCHE_NAVIGATION_SELECTION_BOUTON_HAUT_BAS 4
-#define TOUCHE_NAVIGATION_SELECTION_BOUTON_GAUCHE_DROITE 5
-#define TOUCHE_NAVIGATION_SELECTION_AXE_HAUT_BAS 6
-#define TOUCHE_NAVIGATION_SELECTION_AXE_GAUCHE_DROITE 7
+#define TOUCHE_SOURIS_AXE_X 2
+#define TOUCHE_SOURIS_AXE_Y 3
+#define TOUCHE_NAVIGATION_DEPLACER_AXE_HAUT_BAS 4 // DOIT ETRE LE PREMIER DE LA CATEGORIE !!!
+#define TOUCHE_NAVIGATION_DEPLACER_AXE_GAUCHE_DROITE 5
+#define TOUCHE_NAVIGATION_SELECTION_BOUTON_HAUT_BAS 6
+#define TOUCHE_NAVIGATION_SELECTION_BOUTON_GAUCHE_DROITE 7
 #define TOUCHE_NAVIGATION_SELECTION_BOUTON_CATEGORIE_PRECEDENTE 8
 #define TOUCHE_NAVIGATION_SELECTION_BOUTON_CATEGORIE_SUIVANTE 9
 #define TOUCHE_NAVIGATION_VALIDER 10
@@ -123,10 +125,8 @@
 #define TOUCHE_PLATEAU_DEPLACER_Y 20
 #define TOUCHE_PLATEAU_SELECTION_BOUTON_HAUT_BAS 21
 #define TOUCHE_PLATEAU_SELECTION_BOUTON_GAUCHE_DROITE 22
-#define TOUCHE_PLATEAU_SELECTION_AXE_HAUT_BAS 23
-#define TOUCHE_PLATEAU_SELECTION_AXE_GAUCHE_DROITE 24
-#define TOUCHE_PLATEAU_VALIDER_CASE 25
-#define TOUCHE_PLATEAU_ZOOM 26
+#define TOUCHE_PLATEAU_VALIDER_CASE 23
+#define TOUCHE_PLATEAU_ZOOM 24
 
 // Modes de liaisons des touches
 #define MODE_INCONNU 0
@@ -150,7 +150,6 @@
 #define MENU_COULEUR_FOND_G 0
 #define MENU_COULEUR_FOND_B 0
 #define MENU_OPACITE_FOND 128
-#define MENU_TAILLE_BANDE_TEXTE 1.2 // taille*tailleBouton
 #define MENU_OPACITE_BANDE_TEXTE 240
 #define MENU_COULEUR_TEXTE_R 255
 #define MENU_COULEUR_TEXTE_G 255

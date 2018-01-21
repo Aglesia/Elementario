@@ -127,13 +127,23 @@ void Bouton::afficher(SDL_Rect* p, bool etatSelection, int opacite, SDL_Rect* p2
 		return;
 	}
 
-	// On calcul la position
+	if(p->h == 0 || p->w == 0)
+		return;
+
+	// On calcule la position
 	SDL_Rect pos;
 	SDL_Rect pos2;
 	pos.w = p2->w;
 	pos.h = p2->h;
 	pos.x = p->x - (p->w/2) + p2->x;
 	pos.y = p->y - (p->h/2) + p2->y;
+	if(etatSelection)
+	{
+		pos.x -= (p->w * NIVEAU_ZOOM_BOUTON_ACTIF)/2;
+		pos.y -= (p->h * NIVEAU_ZOOM_BOUTON_ACTIF)/2;
+		pos.w *= 1+NIVEAU_ZOOM_BOUTON_ACTIF;
+		pos.h *= 1+NIVEAU_ZOOM_BOUTON_ACTIF;
+	}
 	SDL_QueryTexture(this->boutonTexture, NULL, NULL, &pos2.w, &pos2.h);
 	pos2.x=(pos2.w*p2->x)/p->w;
 	pos2.y=(pos2.h*p2->y)/p->h;
@@ -141,6 +151,67 @@ void Bouton::afficher(SDL_Rect* p, bool etatSelection, int opacite, SDL_Rect* p2
 	pos2.h=(pos2.h*p2->h)/p->h;
 	SDL_SetTextureAlphaMod(this->boutonTexture, opacite);
 	SDL_RenderCopy(this->renderer, this->boutonTexture, &pos2, &pos);
+}
+
+/**
+ * Indique si le pointeur touche le bouton, en tenant compte de la transparence
+ * @param  tailleX TailleX du bouton à l'écran
+ * @param  tailleY TailleY du bouton à l'écran
+ * @param  posX    Position relative du pointeur par rapport au centre du bouton
+ * @param  posY    Position relative du pointeur par rapport au centre du bouton
+ * @return         true si le pointeur touche le bouton
+ */
+bool Bouton::estPointe(int tailleX, int tailleY, int posX, int posY)
+{
+	bool ret = false;
+	posX+=(tailleX/2);
+	posY+=(tailleY/2);
+
+	// Si la position est négative ou sort de la taille du bouton, on ignore
+	if(posX>=0 && posX<tailleX && posY>=0 && posY<tailleY)
+	{
+		// On calcul la position du pixel réel
+		int pX = posX*this->boutonSurface->w/tailleX;
+		int pY = posY*this->boutonSurface->h/tailleY;
+
+		// On regarde si le pixel est au moins opaque à 50
+		Uint8 r, g, b, a;
+		SDL_GetRGBA(this->getpixel(this->boutonSurface, pX, pY), this->boutonSurface->format, &r, &g, &b, &a);
+		ret = (a>=50);
+	}
+
+	return ret;
+}
+
+Uint32 Bouton::getpixel(SDL_Surface *surface, int x, int y)
+{
+    int bpp = surface->format->BytesPerPixel;
+    /* Here p is the address to the pixel we want to retrieve */
+    Uint8 *p = (Uint8 *)surface->pixels + y * surface->pitch + x * bpp;
+
+    switch(bpp) {
+    case 1:
+        return *p;
+        break;
+
+    case 2:
+        return *(Uint16 *)p;
+        break;
+
+    case 3:
+        if(SDL_BYTEORDER == SDL_BIG_ENDIAN)
+            return p[0] << 16 | p[1] << 8 | p[2];
+        else
+            return p[0] | p[1] << 8 | p[2] << 16;
+        break;
+
+    case 4:
+        return *(Uint32 *)p;
+        break;
+
+    default:
+        return 0;       /* shouldn't happen, but avoids warnings */
+    }
 }
 
 std::string Bouton::getNom()

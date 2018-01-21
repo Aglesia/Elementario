@@ -2,11 +2,13 @@
 #include <Controller.h>
 #include <ToucheJeu.h>
 #include <Touche.h>
+#include <Config.h>
 #include <defs.h>
 
 //#include <jni.h>
 typedef struct VarGame
 {
+	Config* param = nullptr; // Ensemble des configurations
 	BundleTouche** bundles = nullptr; // Tableau des touchesJeu
 	ToucheJeu** touchesJeu = nullptr; // Ensemble de toutes les touchesJeu
 	int configTouchesCategorie = 0; // Catégorie actuelle dans l'écran de configuration des touches
@@ -44,13 +46,13 @@ static int thread_Init(void* data) // TODO : Toutes les touches de base
 	t->var->mutex.lock();
 	t->var->touchesJeu[TOUCHE_PLEIN_ECRAN] = new ToucheJeu("plein écran", "Change le mode d'affichage du jeu entre fenêtré et plein écran", 0, 0, 1);
 	t->var->touchesJeu[TOUCHE_AFFICHAGE_FPS] = new ToucheJeu("afficher les fps", "Affiche ou cache le nombre d'images par secondes calculés par l'ordinateur (en bas à gauche)", 0, 0, 1);
+	t->var->touchesJeu[TOUCHE_SOURIS_AXE_X] = new ToucheJeu("Pointeur souris, axe X", "Indique la position du pointeur, sur l'axe X");
+	t->var->touchesJeu[TOUCHE_SOURIS_AXE_Y] = new ToucheJeu("Pointeur souris, axe Y", "Indique la position du pointeur, sur l'axe Y");
 
 	t->var->touchesJeu[TOUCHE_NAVIGATION_DEPLACER_AXE_HAUT_BAS] = new ToucheJeu("déplacement vertical", "Déplace les boutons du menu vers le haut ou vers le bas");
 	t->var->touchesJeu[TOUCHE_NAVIGATION_DEPLACER_AXE_GAUCHE_DROITE] = new ToucheJeu("déplacement horizontal", "Déplace les boutons des catégories vers la gauche ou vers la droite");
 	t->var->touchesJeu[TOUCHE_NAVIGATION_SELECTION_BOUTON_HAUT_BAS] = new ToucheJeu("sélection verticale (bouton)", "Sélectionne le bouton vers le haut ou vers le bas", 0, -1, 1);
 	t->var->touchesJeu[TOUCHE_NAVIGATION_SELECTION_BOUTON_GAUCHE_DROITE] = new ToucheJeu("sélection horizontale (bouton)", "Sélectionne le bouton vers à gauche ou vers la droite", 0, -1, 1);
-	t->var->touchesJeu[TOUCHE_NAVIGATION_SELECTION_AXE_HAUT_BAS] = new ToucheJeu("sélection verticale (axe)", "Sélectionne les boutons affichés à l'écran, vers le haut ou vers le bas");
-	t->var->touchesJeu[TOUCHE_NAVIGATION_SELECTION_AXE_GAUCHE_DROITE] = new ToucheJeu("sélection horizontale (axe)", "Sélectionne les boutons affichés à l'écran, vers la gauche ou vers la droite");
 	t->var->touchesJeu[TOUCHE_NAVIGATION_VALIDER] = new ToucheJeu("valider", "Valide la sélection actuelle, le bouton actuellement sélectionné", 0, 0, 1);
 	t->var->touchesJeu[TOUCHE_NAVIGATION_RETOUR] = new ToucheJeu("annuler", "Annule le menu et reviens à l'écran précédent", 0, 0, 1);
 	t->var->touchesJeu[TOUCHE_NAVIGATION_AVANCE] = new ToucheJeu("avancé", "Accède à des options avancées ou des infos, pour la sélection actuelle", 0, 0, 1);
@@ -68,11 +70,11 @@ static int thread_Init(void* data) // TODO : Toutes les touches de base
 	t->var->touchesJeu[TOUCHE_PLATEAU_DEPLACER_Y] = new ToucheJeu("déplacement Y", "Déplace le plateau de jeu horizontalement");
 	t->var->touchesJeu[TOUCHE_PLATEAU_SELECTION_BOUTON_HAUT_BAS] = new ToucheJeu("sélection verticale (bouton)", "Sélectionne la case du plateau, juste au dessus ou juste en dessous");
 	t->var->touchesJeu[TOUCHE_PLATEAU_SELECTION_BOUTON_GAUCHE_DROITE] = new ToucheJeu("sélection horizontale (bouton)", "Sélectionne la case du plateau, juste à gauche ou juste à droite");
-	t->var->touchesJeu[TOUCHE_PLATEAU_SELECTION_AXE_HAUT_BAS] = new ToucheJeu("sélection verticale (axe)", "Sélectionne les cases du plateau, vers le haut ou vers le bas");
-	t->var->touchesJeu[TOUCHE_PLATEAU_SELECTION_AXE_GAUCHE_DROITE] = new ToucheJeu("sélection horizontale (axe)", "Sélectionne les cases du plateau, vers la gauche ou vers la droite");
 	t->var->touchesJeu[TOUCHE_PLATEAU_VALIDER_CASE] = new ToucheJeu("action", "Valide la case du plateau actuellement sélectionnée et affiche les actions possibles", 0, 0, 1);
 	t->var->touchesJeu[TOUCHE_PLATEAU_ZOOM] = new ToucheJeu("zoom", "Zoom ou dézoom l'affichage du plateau");
 	t->var->mutex.unlock();
+
+	t->var->param->setAfficherPointeur(true);
 
 	// Si le fichier de configuration existe, on le lit // TODO : automatiser à partir d'un fichier externe
 	// Sinon on crée les touches de base
@@ -84,6 +86,22 @@ static int thread_Init(void* data) // TODO : Toutes les touches de base
 		{
 			LiaisonTouche* lt = new LiaisonTouche(t->var->touchesJeu[TOUCHE_PLEIN_ECRAN], touche);
 			lt->setMode(MODE_APPUIE_UNIQUE);
+			t->var->bundles[BUNDLE_PERSISTANT]->ajouterLiaison(lt);
+		}
+
+		touche = t->c->getTouche(-2, 1, TYPE_TOUCHE_JOYSTIC); // Pointeur X
+		if(touche)
+		{
+			LiaisonTouche* lt = new LiaisonTouche(t->var->touchesJeu[TOUCHE_SOURIS_AXE_X], touche);
+			lt->setMode(MODE_AXE_ABSOLUE);
+			t->var->bundles[BUNDLE_PERSISTANT]->ajouterLiaison(lt);
+		}
+
+		touche = t->c->getTouche(-2, 2, TYPE_TOUCHE_JOYSTIC); // Pointeur Y
+		if(touche)
+		{
+			LiaisonTouche* lt = new LiaisonTouche(t->var->touchesJeu[TOUCHE_SOURIS_AXE_Y], touche);
+			lt->setMode(MODE_AXE_ABSOLUE);
 			t->var->bundles[BUNDLE_PERSISTANT]->ajouterLiaison(lt);
 		}
 
@@ -138,7 +156,7 @@ static int thread_Init(void* data) // TODO : Toutes les touches de base
 		}
 
 		// Catégorie suivante
-		touche = t->c->getTouche(-1, SDLK_z, TYPE_TOUCHE_BOUTON);
+		touche = t->c->getTouche(-1, SDLK_e, TYPE_TOUCHE_BOUTON);
 		if(touche)
 		{
 			LiaisonTouche* lt = new LiaisonTouche(t->var->touchesJeu[TOUCHE_NAVIGATION_SELECTION_BOUTON_CATEGORIE_SUIVANTE], touche);
@@ -170,22 +188,6 @@ static int thread_Init(void* data) // TODO : Toutes les touches de base
 		{
 			LiaisonTouche* lt = new LiaisonTouche(t->var->touchesJeu[TOUCHE_NAVIGATION_RETOUR], touche);
 			lt->setMode(MODE_APPUIE_UNIQUE);
-			t->var->bundles[BUNDLE_NAVIGATION]->ajouterLiaison(lt);
-		}
-
-		touche = t->c->getTouche(-2, 1, TYPE_TOUCHE_JOYSTIC); // Pointeur X
-		if(touche)
-		{
-			LiaisonTouche* lt = new LiaisonTouche(t->var->touchesJeu[TOUCHE_NAVIGATION_SELECTION_AXE_GAUCHE_DROITE], touche);
-			lt->setMode(MODE_AXE_ABSOLUE);
-			t->var->bundles[BUNDLE_NAVIGATION]->ajouterLiaison(lt);
-		}
-
-		touche = t->c->getTouche(-2, 2, TYPE_TOUCHE_JOYSTIC); // Pointeur Y
-		if(touche)
-		{
-			LiaisonTouche* lt = new LiaisonTouche(t->var->touchesJeu[TOUCHE_NAVIGATION_SELECTION_AXE_HAUT_BAS], touche);
-			lt->setMode(MODE_AXE_ABSOLUE);
 			t->var->bundles[BUNDLE_NAVIGATION]->ajouterLiaison(lt);
 		}
 
@@ -267,7 +269,7 @@ static int thread_ConfigTouches_categories(void* data)
 	{
 		SDL_Delay(15);
 		t->mutex.lock();
-		stop = t->mustStop;
+		stop = (t->mustStop || t->isStop);
 		t->mutex.unlock();
 
 		// On regarde si l'utilisateur a fait son choix sur le menu
@@ -279,7 +281,7 @@ static int thread_ConfigTouches_categories(void* data)
 			t->isStop = true;
 			t->mutex.unlock();
 		}
-		else if(result == -1)
+		else if(result<0)
 		{
 			t->mutex.lock();
 			t->ret = result;
@@ -341,7 +343,9 @@ int main(int argc, char** argv)
 	for(int i=0; i<NB_TOUCHES_JEU; i++)
 		touchesJeu[i] = nullptr;
 	var.touchesJeu = touchesJeu;
-	Affichage* aff = new Affichage("Elementario", path, touchesJeu);
+	Config param;
+	var.param = &param;
+	Affichage* aff = new Affichage("Elementario", path, touchesJeu, &param);
 	Controller* c = new Controller(bundlePersistant);
 	c->update();
 
@@ -442,7 +446,7 @@ int main(int argc, char** argv)
 						break;
 
 					case ETAT_CONFIG_TOUCHES_CATEGORIES:
-						if(t.ret == 2) // Bouton annuler
+						if(t.ret == -1) // Bouton annuler
 							etat = ETAT_QUITTER;
 						else
 							etat = ETAT_QUITTER; // TODO : a changer

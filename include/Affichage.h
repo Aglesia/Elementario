@@ -7,11 +7,12 @@
 #include <ToucheJeu.h>
 #include <Menu.h>
 #include <defs.h>
+#include <Config.h>
 
 class Affichage
 {
 	public:
-		Affichage(std::string name, std::string path, ToucheJeu** touchesJeu);
+		Affichage(std::string name, std::string path, ToucheJeu** touchesJeu, Config* param);
 		virtual ~Affichage();
 		void modePleinEcran(bool pleinEcran = true, int* x = nullptr, int* y = nullptr);
 		void update();
@@ -59,6 +60,7 @@ class Affichage
 	protected:
 
 	private:
+		Config* param; // Ensemble des paramètres du logiciel
 		std::string path; // Chemin d'accès aux fichiers
 		SDL_Window* pWindow = nullptr; // Fenêtre principale
 		SDL_Renderer* renderer = nullptr; // Rendu de la fenêtre principale
@@ -69,9 +71,11 @@ class Affichage
 		SDL_Surface* fond_surface = nullptr; // Surface du fond de l'écran
 		SDL_Surface* barreChargement_surface = nullptr; // Barre de chargement (surface)
 		SDL_Surface* icone = nullptr; // Icône de l'appli
+		SDL_Surface* pointeur_surface = nullptr; // Pointeur (surface)
 		SDL_Texture* fond = nullptr; // Texture du fond de l'écran
 		SDL_Texture* gifChargement = nullptr; // Texture de l'icône de l'application, qui tourne sur l'écran ds chargement
 		SDL_Texture* barreChargement = nullptr; // Barre de chargement
+		SDL_Texture* pointeur = nullptr; // Pointeur
 		unsigned int pourcentage = 0; // Pourcentage actuel de chargement
 		double rotation = 0; // Rotation actuelle de l'image de chargement
 		std::string texteChargement = ""; // Texte actuel à afficher sur l'écran de chargement

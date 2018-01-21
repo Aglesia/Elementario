@@ -29,7 +29,6 @@ void ToucheJeu::setVal(int val)
 	if(val<this->min)
 		val = this->min;
 	this->valeurAxe = val;
-	SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Valeur touche \"%s\" modifiée : %d\n", this->nom.c_str(), val);
 	this->mutex.unlock();
 }
 

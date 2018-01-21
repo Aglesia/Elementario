@@ -25,6 +25,13 @@ class Menu
 		void setPositionAffichage(int affichageX, int affichageY);
 
 		/**
+		 * Position absolue du menu, en pixels. 0.0 = haut.gauche
+		 * @param affichageX Position absolue du point haut gauche de la zone
+		 * @param affichageY Position absolue du point haut gauche de la zone
+		 */
+		void setTailleEcran(int tailleX, int tailleY);
+
+		/**
 		 * Ajoute une catégorie de boutons au menu
 		 * @param boutons     Ensemble des boutons contenus dans la catégorie, le premier est le bouton représentant la catégorie, qui sera mis dans la barre des catégories, en haut
 		 */
@@ -49,6 +56,10 @@ class Menu
 		 * @return 0 s'il n'y a rien eu de spécifique, -1 si annulé, n° du bouton (en partant de 1) si un bouton a été validé, -([n°bouton]-1) en cas d'option avancée
 		 */
 		int getResult();
+		// remet le résultat à 0
+		void reset();
+
+		int makeTextes();
 
 	private:
 		SDL_Renderer* renderer; // Renderer sur lequel dessiner
@@ -56,6 +67,8 @@ class Menu
 		int positionY = 0; // position absolue du menu, en pixel
 		int tailleX = 0; // Taille absolue du menu en pixel
 		int tailleY = 0; // Taille absolue du menu en pixel
+		int tailleEcranX = 0; // Taille absolue de l'écran en pixel
+		int tailleEcranY = 0; // Taille absolue de l'écran en pixel
 		int tailleBouton = 0; // Taille d'un bouton (taille*taille), en pixels
 		int selectionX = 0; // Position du pointeur de sélection (zone : écran complet)
 		int selectionY = 0; // Position du pointeur de sélection (zone : écran complet)
@@ -72,6 +85,8 @@ class Menu
 		int typeAnimation = 0; // 0 = aucune animation, 1 = ouverture, 2 = fermeture (opacité +/-)
 		int result = 0; // Dernier résultat s'il y'en a un
 		TTF_Font* policeMenu; // Police d'écriture sur le menu
+		std::vector<SDL_Texture*> texteT; // Ensemble des lignes de texte pour le titre
+		std::vector<SDL_Texture*> texteD; // Ensemble des lignes de texte pour la description
 };
 
 #endif

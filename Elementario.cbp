@@ -49,10 +49,12 @@
 		<Unit filename="include/Affichage.h" />
 		<Unit filename="include/Bouton.h" />
 		<Unit filename="include/BundleTouche.h" />
+		<Unit filename="include/Config.h" />
 		<Unit filename="include/Controller.h" />
 		<Unit filename="include/LiaisonTouche.h" />
 		<Unit filename="include/Manette.h" />
 		<Unit filename="include/Menu.h" />
+		<Unit filename="include/MenuAngulaire.h" />
 		<Unit filename="include/SDL2/SDL.h" />
 		<Unit filename="include/SDL2/SDL_assert.h" />
 		<Unit filename="include/SDL2/SDL_atomic.h" />
@@ -134,10 +136,12 @@
 		<Unit filename="src/Affichage.cpp" />
 		<Unit filename="src/Bouton.cpp" />
 		<Unit filename="src/BundleTouche.cpp" />
+		<Unit filename="src/Config.cpp" />
 		<Unit filename="src/Controller.cpp" />
 		<Unit filename="src/LiaisonTouche.cpp" />
 		<Unit filename="src/Manette.cpp" />
 		<Unit filename="src/Menu.cpp" />
+		<Unit filename="src/MenuAngulaire.cpp" />
 		<Unit filename="src/Touche.cpp" />
 		<Unit filename="src/ToucheJeu.cpp" />
 		<Unit filename="src/main.cpp" />

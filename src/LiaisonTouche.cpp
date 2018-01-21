@@ -25,7 +25,6 @@ void LiaisonTouche::nouvelEvenement(Touche* touche)
 		return;
 
 	int valeur = (touche->getValAxe(true) - this->minT) * (this->maxTJ - this->minTJ) / (this->maxT - this->minT) + this->minTJ;
-	printf("JBHFBEKBIKBEVKBEV, axe = %d\n", valeur);
 
 	// Si c'est t1 et que t2 est null, on le traite normalement selon le mode
 	if(this->t2 == nullptr)
@@ -152,7 +151,7 @@ void LiaisonTouche::nouvelEvenement(Touche* touche)
 bool LiaisonTouche::touchePresente(Touche* touche)
 {
 	// On regarde si la touche vaut t1 ou t2
-	return (touche == this->t1 || touche == this->t2);
+	return (touche == this->t1 || (touche == this->t2 && this->etatEvent>0));
 }
 
 bool LiaisonTouche::toucheJeuPresente(ToucheJeu* touche)

@@ -26,6 +26,16 @@ class Bouton // TODO : Surcharger le copy-constructeur et jouer un son à la sé
 		void afficher(SDL_Rect* p, bool etatSelection, int opacite, SDL_Rect* p2);
 
 		/**
+		 * Indique si le pointeur touche le bouton, en tenant compte de la transparence
+		 * @param  tailleX TailleX du bouton à l'écran
+		 * @param  tailleY TailleY du bouton à l'écran
+		 * @param  posX    Position relative du pointeur par rapport au centre du bouton
+		 * @param  posY    Position relative du pointeur par rapport au centre du bouton
+		 * @return         true si le pointeur touche le bouton
+		 */
+		bool estPointe(int tailleX, int tailleY, int posX, int posY);
+
+		/**
 		 * Modifie la taille de référence du bouton (zoom)
 		 * @param taille nouvelle taille
 		 */
@@ -36,6 +46,7 @@ class Bouton // TODO : Surcharger le copy-constructeur et jouer un son à la sé
 
 		void setNom(std::string nom);
 		void setDescription(std::string description);
+		Uint32 getpixel(SDL_Surface *surface, int x, int y);
 
 	protected:
 

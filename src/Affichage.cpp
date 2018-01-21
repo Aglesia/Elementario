@@ -1,8 +1,9 @@
 #include "Affichage.h"
 
-Affichage::Affichage(std::string name, std::string path, ToucheJeu** touchesJeu)
+Affichage::Affichage(std::string name, std::string path, ToucheJeu** touchesJeu, Config* param)
 {
 	this->path = path;
+	this->param = param;
 	this->touchesJeu = touchesJeu;
 
 	// On crée la fenêtre
@@ -47,6 +48,8 @@ Affichage::~Affichage() // TODO : vider toutes les textures/surfaces
 		SDL_DestroyTexture(this->gifChargement);
 	if(this->barreChargement)
 		SDL_DestroyTexture(this->barreChargement);
+	if(this->pointeur)
+		SDL_DestroyTexture(this->pointeur);
 
 	// On détruit toutes les surfaces
 	if(this->icone)
@@ -55,6 +58,8 @@ Affichage::~Affichage() // TODO : vider toutes les textures/surfaces
 		SDL_FreeSurface(this->fond_surface);
 	if(this->barreChargement_surface)
 		SDL_FreeSurface(this->barreChargement_surface);
+	if(this->pointeur_surface)
+		SDL_FreeSurface(this->pointeur_surface);
 
 	//On détruit les boutons
     for(int i=0; i<this->boutons.size(); i++)
@@ -121,6 +126,10 @@ void Affichage::update()
 	if(this->icone != nullptr && this->gifChargement == nullptr)
 		this->gifChargement = SDL_CreateTextureFromSurface(this->renderer, this->icone);
 
+	// Icône
+	if(this->pointeur_surface != nullptr && this->pointeur == nullptr)
+		this->pointeur = SDL_CreateTextureFromSurface(this->renderer, this->pointeur_surface);
+
 	// Si le fond est chargé, on l'affiche
 	if(this->fond_surface != nullptr)
 	{
@@ -184,9 +193,29 @@ void Affichage::update()
 			break;
 	}
 
-	// Si la police est chargée
-	if(this->policeChargement != nullptr); // TODO : afficher les fps correctement, et uniquement si demandé
-	if(false)
+	// Si l'utilisateur l'a demandé, on affiche l'emplacement du pointeur
+	if(this->param->getAfficherPointeur() && this->pointeur!=nullptr)
+	{
+		// On calcul sa position
+		SDL_Rect r;
+		int x, y;
+		SDL_GetWindowSize(this->pWindow, &x, &y);
+		ToucheJeu* axeX = this->touchesJeu[TOUCHE_SOURIS_AXE_X];
+		ToucheJeu* axeY = this->touchesJeu[TOUCHE_SOURIS_AXE_Y];
+		int xR = (axeX->getVal() - axeX->getValeurMin()) * x/(axeX->getValeurMax() - axeX->getValeurMin());
+		int yR = (axeY->getVal() - axeY->getValeurMin()) * y/(axeY->getValeurMax() - axeY->getValeurMin());
+
+		r.w=TAILLE_POINTEUR;
+		r.h=TAILLE_POINTEUR;
+		r.x = xR-(r.w/2);
+		r.y = yR-(r.h/2);
+
+		// On affiche le texte
+		SDL_RenderCopy(this->renderer, this->pointeur, nullptr, &r);
+	}
+
+	// Si la police est chargée on affiche les FPS
+	if(this->policeChargement != nullptr && false) // TODO : afficher les fps correctement, et uniquement si demandé
 	{
 		// On crée le texte des fps
 		SDL_Color couleurTexte = {COULEUR_TEXTE_CHARGEMENT_R, COULEUR_TEXTE_CHARGEMENT_G, COULEUR_TEXTE_CHARGEMENT_B};
@@ -267,6 +296,14 @@ int Affichage::init() // TODO : Ajouter tous les éléments à charger + image d
 		error = 1;
 		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,  "Impossible de charger l'icône : %s\n", IMG_GetError());
 	}
+
+	// On charge le pointeur
+	this->afficherEcranChargement(50, "Chargement de l'icône du jeu");
+	temp2 = this->path;
+	temp2 += POINTEUR_FILENAME;
+	this->lock.lock();
+	this->pointeur_surface = IMG_Load(temp2.c_str());
+	this->lock.unlock();
 
 	// On charge les polices d'écriture
 	this->afficherEcranChargement(75, "Chargement de la police d'écriture 01/02");
@@ -758,6 +795,8 @@ void Affichage::setEcran(int ecran) // TODO : Gérer les transitions
 		// Le menu prend tout l'écran avec une marge de 10 pixels
 		this->menu->setTailleAffichage(this->ancienneTailleX-20, this->ancienneTailleY-20, TAILLE_ICONE_CONFIG_TOUCHE*this->tailleRef);
 		this->menu->setPositionAffichage(10, 10);
+		this->menu->setTailleEcran(this->ancienneTailleX, this->ancienneTailleY);
+		this->menu->reset();
 		this->menu->update(0);
 	}
 	// On ferme le menu de config touche - choix
@@ -769,6 +808,7 @@ void Affichage::setEcran(int ecran) // TODO : Gérer les transitions
 	if(this->ecran == MODE_AFFICHAGE_CONFIG_TOUCHES_CATEGORIES && ecran == MODE_AFFICHAGE_CONFIG_TOUCHES_CATEGORIES)
 	{
 		this->menu->setTailleAffichage(this->ancienneTailleX-20, this->ancienneTailleY-20, TAILLE_ICONE_CONFIG_TOUCHE*this->tailleRef);
+		this->menu->setTailleEcran(this->ancienneTailleX, this->ancienneTailleY);
 	}
 	this->ecran = ecran;
 	this->lock.unlock();
