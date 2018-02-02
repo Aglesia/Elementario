@@ -10,7 +10,8 @@ class LiaisonTouche
 	public:
 		LiaisonTouche(ToucheJeu* tj, Touche* t1, Touche* t2 = nullptr);
 		virtual ~LiaisonTouche();
-		void nouvelEvenement(Touche* touche);
+		// Retourne 0 si la touche n'a pas été traitée par la liaison touche
+		int nouvelEvenement(Touche* touche);
 		bool touchePresente(Touche* touche);
 		bool toucheJeuPresente(ToucheJeu* touche);
 		/**

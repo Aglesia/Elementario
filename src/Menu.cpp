@@ -30,7 +30,8 @@ void Menu::setTailleAffichage(int affichageX, int affichageY, int tailleBoutons)
 	this->tailleX = affichageX;
 	this->tailleY = affichageY;
 	this->tailleBouton = tailleBoutons;
-	this->nbBtParLigne = (affichageX/tailleBoutons)-1;
+	if(tailleBoutons>0)
+		this->nbBtParLigne = (affichageX/tailleBoutons)-1;
 	if(this->nbBtParLigne<1)
 		this->nbBtParLigne = 1;
 }
@@ -91,7 +92,7 @@ void Menu::reset()
  * Les déplacements horizontaux du menu servent aux catégories, les déplacement verticaux servent aux boutons de sous-catégorie
  * @return 0 s'il n'y a rien eu de spécifique, -1 si annulé, n° du bouton (en partant de 1) si un bouton a été validé, -([n°bouton]-1) en cas d'option avancée
  */
-int Menu::update(int ticks) // TODO : optimiser (ne recalcul que si besoin) // TODO BUG : Bouton sélectionné arrive à la limite haute : monte trop vite
+int Menu::update(int ticks) // TODO : optimiser (ne recalcul que si besoin) // TODO BUG : Bouton sélectionné arrive à la limite haute : monte trop vite // BUG : Android double-clic -> sélection bouton = valider
 {
 	// Si on est en animation, on la gère
 	int opacite = 255;
@@ -110,7 +111,7 @@ int Menu::update(int ticks) // TODO : optimiser (ne recalcul que si besoin) // T
 
 	// On calcul la nouvelle sélection, et les nouveaux emplacements
 	// Catégorie précédente
-	if(this->touches[TOUCHE_NAVIGATION_SELECTION_BOUTON_CATEGORIE_PRECEDENTE]->getVal()>0)
+	if(this->touches[TOUCHE_NAVIGATION_SELECTION_BOUTON_CATEGORIE_PRECEDENTE]->isEvent())
 	{
 		this->touches[TOUCHE_NAVIGATION_SELECTION_BOUTON_CATEGORIE_PRECEDENTE]->setVal(0);
 		// On change la catégorie
@@ -121,7 +122,7 @@ int Menu::update(int ticks) // TODO : optimiser (ne recalcul que si besoin) // T
 		this->boutonSelect = 0;
 	}
 	// Catégorie suivante
-	if(this->touches[TOUCHE_NAVIGATION_SELECTION_BOUTON_CATEGORIE_SUIVANTE]->getVal()>0)
+	if(this->touches[TOUCHE_NAVIGATION_SELECTION_BOUTON_CATEGORIE_SUIVANTE]->isEvent())
 	{
 		this->touches[TOUCHE_NAVIGATION_SELECTION_BOUTON_CATEGORIE_SUIVANTE]->setVal(0);
 		// On change la catégorie
@@ -165,22 +166,10 @@ int Menu::update(int ticks) // TODO : optimiser (ne recalcul que si besoin) // T
 		if(this->boutonSelect+this->nbBtParLigne < this->nbBoutons[this->categorieSelect])
 			this->boutonSelect += this->nbBtParLigne;
 	}
-	// Bouton valider
-	if(this->touches[TOUCHE_NAVIGATION_VALIDER]->getVal()>0)
-	{
-		this->result = this->boutonSelect+1;
-		return result;
-	}
 	// Bouton annuler
-	if(this->touches[TOUCHE_NAVIGATION_RETOUR]->getVal()>0)
+	if(this->touches[TOUCHE_NAVIGATION_RETOUR]->isEvent())
 	{
 		this->result = -1;
-		return result;
-	}
-	// Bouton avancé
-	if(this->touches[TOUCHE_NAVIGATION_AVANCE]->getVal()>0)
-	{
-		this->result = -1-this->boutonSelect;
 		return result;
 	}
 
@@ -226,6 +215,11 @@ int Menu::update(int ticks) // TODO : optimiser (ne recalcul que si besoin) // T
 	ToucheJeu* sourisY = this->touches[TOUCHE_SOURIS_AXE_Y];
 	int xR = (sourisX->getVal() - sourisX->getValeurMin()) * this->tailleEcranX/(sourisX->getValeurMax() - sourisX->getValeurMin());
 	int yR = (sourisY->getVal() - sourisY->getValeurMin()) * this->tailleEcranY/(sourisY->getValeurMax() - sourisY->getValeurMin());
+
+	// Si on a cliqué, on l'indique
+	bool clic = (this->touches[TOUCHE_SOURIS_CLIC]->isEvent() && this->touches[TOUCHE_SOURIS_CLIC]->getVal()>0);
+	if(clic)
+		eventSouris = true;
 
 	// On affiche
 	for(int i=0; i<this->categories.size(); i++)
@@ -307,8 +301,9 @@ int Menu::update(int ticks) // TODO : optimiser (ne recalcul que si besoin) // T
 	xRef = this->positionX+((this->tailleX-tailleX)/2);
 	// Y
 	tailleY = tailleBt/2;
-	for(int i=0; i<this->nbBoutons[categorieSelect]; i += this->nbBtParLigne)
-		tailleY += tailleBt;
+	if(this->nbBoutons.size()>categorieSelect)
+		for(int i=0; i<this->nbBoutons[categorieSelect]; i += this->nbBtParLigne)
+			tailleY += tailleBt;
 	yRef = this->positionY+tailleBtX;
 	int tailleZoneY = (this->tailleY-tailleBtX)-hauteurTexte;
 	if(tailleZoneY > tailleY)
@@ -334,61 +329,69 @@ int Menu::update(int ticks) // TODO : optimiser (ne recalcul que si besoin) // T
 		yR>this->positionY+tailleBtX && yR<this->positionY+tailleBtX+tailleZoneY);
 
 	// On affiche l'ensemble des boutons
-	for(int noLigne = 0, noBouton = 0; noBouton<this->nbBoutons[categorieSelect]; noLigne++)
-	{
-		bool decaler = false;
-		for(int noBoutonLigne = 0; noBoutonLigne<this->nbBtParLigne && noBouton<this->nbBoutons[categorieSelect]; noBoutonLigne++)
+	if(this->nbBoutons.size()>categorieSelect)
+		for(int noLigne = 0, noBouton = 0; noBouton<this->nbBoutons[categorieSelect]; noLigne++)
 		{
-			// On calcul la position
-			SDL_Rect p1;
-			p1.x=xRef+(decalageX*noBoutonLigne)+(tailleBtX/2);
-			p1.y=yRef+(noLigne*tailleBt)+(tailleBt/2);
-			if(decaler)
-				p1.y+=tailleBt/2;
-			p1.w=this->tailleBouton;
-			p1.h=this->tailleBouton;
-			decaler = !decaler;
-
-			// On regarde si la souris est dessus
-			if(eventSouris)
+			bool decaler = false;
+			for(int noBoutonLigne = 0; noBoutonLigne<this->nbBtParLigne && noBouton<this->nbBoutons[categorieSelect]; noBoutonLigne++)
 			{
-				// On regarde s'il est sur notre bouton
-				if(this->boutons[btSelect+noBouton]->estPointe(p1.w, p1.h, xR-p1.x, yR-p1.y))
-					this->boutonSelect = noBouton;
-			}
+				// On calcul la position
+				SDL_Rect p1;
+				p1.x=xRef+(decalageX*noBoutonLigne)+(tailleBtX/2);
+				p1.y=yRef+(noLigne*tailleBt)+(tailleBt/2);
+				if(decaler)
+					p1.y+=tailleBt/2;
+				p1.w=this->tailleBouton;
+				p1.h=this->tailleBouton;
+				decaler = !decaler;
 
-			// On calcul la découpe si besoin
-			SDL_Rect p2;
-			p2.x=0;
-			p2.y=0;
-			p2.w=this->tailleBouton;
-			p2.h=this->tailleBouton;
+				// On regarde si la souris est dessus
+				if(eventSouris)
+				{
+					// On regarde s'il est sur notre bouton
+					if(this->boutons[btSelect+noBouton]->estPointe(p1.w, p1.h, xR-p1.x, yR-p1.y))
+					{
+						if(this->boutonSelect == noBouton && clic)
+						{
+							this->result = btSelect+noBouton+1;
+							return this->result;
+						}
+						this->boutonSelect = noBouton;
+					}
+				}
 
-			if(noBouton == this->boutonSelect)
-			{
-				// Limite haute
-				if(p1.y-(tailleBtX/2)<this->positionY+tailleBtX)
-					p2.y = (this->positionY+tailleBtX)-(p1.y-(tailleBtX/2))+1;
-				// Limite basse
-				if(p1.y+(tailleBtX/2)>this->positionY+this->tailleY)
-					p2.h -= ((p1.y+(tailleBtX/2))-(this->positionY+this->tailleY))/(1+NIVEAU_ZOOM_BOUTON_ACTIF);
-			}
-			else
-			{
-				// Limite haute
-				if(p1.y-(this->tailleBouton/2)<this->positionY+tailleBtX)
-					p2.y = (this->positionY+tailleBtX)-(p1.y-(this->tailleBouton/2))+1;
-				// Limite basse
-				if(p1.y+(this->tailleBouton/2)>this->positionY+this->tailleY)
-					p2.h = (this->positionY+this->tailleY)-(p1.y-(this->tailleBouton/2));
-			}
-			p2.h -= p2.y;				
+				// On calcul la découpe si besoin
+				SDL_Rect p2;
+				p2.x=0;
+				p2.y=0;
+				p2.w=this->tailleBouton;
+				p2.h=this->tailleBouton;
 
-			// On affiche le bouton
-			this->boutons[btSelect+noBouton]->afficher(&p1, (noBouton == this->boutonSelect), 255, &p2);
-			noBouton++;
+				if(noBouton == this->boutonSelect)
+				{
+					// Limite haute
+					if(p1.y-(tailleBtX/2)<this->positionY+tailleBtX)
+						p2.y = (this->positionY+tailleBtX)-(p1.y-(tailleBtX/2))+1;
+					// Limite basse
+					if(p1.y+(tailleBtX/2)>this->positionY+this->tailleY)
+						p2.h -= ((p1.y+(tailleBtX/2))-(this->positionY+this->tailleY))/(1+NIVEAU_ZOOM_BOUTON_ACTIF);
+				}
+				else
+				{
+					// Limite haute
+					if(p1.y-(this->tailleBouton/2)<this->positionY+tailleBtX)
+						p2.y = (this->positionY+tailleBtX)-(p1.y-(this->tailleBouton/2))+1;
+					// Limite basse
+					if(p1.y+(this->tailleBouton/2)>this->positionY+this->tailleY)
+						p2.h = (this->positionY+this->tailleY)-(p1.y-(this->tailleBouton/2));
+				}
+				p2.h -= p2.y;
+
+				// On affiche le bouton
+				this->boutons[btSelect+noBouton]->afficher(&p1, (noBouton == this->boutonSelect), 255, &p2);
+				noBouton++;
+			}
 		}
-	}
 
 	// On affiche le nom et la description de la sélection
 	if(this->boutons.size()>this->boutonSelect)
@@ -465,6 +468,19 @@ int Menu::update(int ticks) // TODO : optimiser (ne recalcul que si besoin) // T
 	SDL_RenderCopy(this->renderer, fondSombre, NULL, &fond);
 	SDL_DestroyTexture(fondSombre);
 
+	// Bouton valider
+	if(this->touches[TOUCHE_NAVIGATION_VALIDER]->isEvent())
+	{
+		this->result = btSelect+this->boutonSelect+1;
+		return result;
+	}
+	// Bouton avancé
+	if(this->touches[TOUCHE_NAVIGATION_AVANCE]->isEvent())
+	{
+		this->result = -2-(btSelect+this->boutonSelect);
+		return result;
+	}
+
 	return 0;
 }
 
@@ -479,12 +495,18 @@ int Menu::getResult()
 
 int Menu::makeTextes() // TODO : spliter le texte et faire des retours à la ligne si besoin
 {
+	if(this->categories.size()<=this->categorieSelect)
+		return 0;
+
 	int taille = 10;
 	int btSelect = 0;
 	for(int i=0; i<categorieSelect; i++)
 		btSelect += nbBoutons[i];
 
 	btSelect += this->boutonSelect;
+
+	if(this->boutons.size()<=btSelect)
+		return 0;
 
 	// On vide les anciennes textures
 	for(int i=0; i<this->texteT.size(); i++)

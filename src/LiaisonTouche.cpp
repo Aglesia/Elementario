@@ -18,19 +18,21 @@ LiaisonTouche::LiaisonTouche(ToucheJeu* tj, Touche* t1, Touche* t2)
 
 LiaisonTouche::~LiaisonTouche(){}
 
-void LiaisonTouche::nouvelEvenement(Touche* touche)
+int LiaisonTouche::nouvelEvenement(Touche* touche)
 {
 	// On regarde si ça nous concerne
 	if(!this->touchePresente(touche))
-		return;
+		return 0;
+	int ret = 0;
 
 	int valeur = (touche->getValAxe(true) - this->minT) * (this->maxTJ - this->minTJ) / (this->maxT - this->minT) + this->minTJ;
 
 	// Si c'est t1 et que t2 est null, on le traite normalement selon le mode
 	if(this->t2 == nullptr)
 	{
+		ret = 1;
 		if(!touche->actif())
-			return;
+			return 0;
 		switch(this->mode)
 		{
 			case MODE_APPUIE_UNIQUE:
@@ -76,6 +78,7 @@ void LiaisonTouche::nouvelEvenement(Touche* touche)
 			this->valeurAxeT2 = this->t2->getValAxe();
 			this->valeurAxeTJ = this->tj->getVal();
 			this->etatEvent = 1;
+			ret = 2;
 		}
 		else if(!valeur)
 		{
@@ -89,6 +92,7 @@ void LiaisonTouche::nouvelEvenement(Touche* touche)
 	{
 		if(this->etatEvent > 0)
 		{
+			ret = 3;
 			etatEvent = 2;
 			// On indique de ne pas prendre en compte t1 ni t2 pour les autres
 			touche->desactiver();
@@ -146,6 +150,8 @@ void LiaisonTouche::nouvelEvenement(Touche* touche)
 			}
 		}
 	}
+
+	return ret;
 }
 
 bool LiaisonTouche::touchePresente(Touche* touche)

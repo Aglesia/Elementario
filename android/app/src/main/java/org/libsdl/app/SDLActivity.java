@@ -142,6 +142,7 @@ public class SDLActivity extends Activity {
     private void copyRes(){
         copyFiletoExternalStorage(R.raw.icon, "data/image", "icon.png");
         copyFiletoExternalStorage(R.raw.fond, "data/image", "fond.png");
+        copyFiletoExternalStorage(R.raw.pointer, "data/image", "pointer.png");
         copyFiletoExternalStorage(R.raw.chargement, "data/font", "chargement.ttf");
         copyFiletoExternalStorage(R.raw.conf_axe, "data/image/button/config", "axe.png");
         copyFiletoExternalStorage(R.raw.conf_bouton, "data/image/button/config", "bouton.png");
@@ -175,10 +176,18 @@ public class SDLActivity extends Activity {
         copyFiletoExternalStorage(R.raw.conf_t_21, "data/image/button/config/touche", "21.png");
         copyFiletoExternalStorage(R.raw.conf_t_22, "data/image/button/config/touche", "22.png");
         copyFiletoExternalStorage(R.raw.conf_t_23, "data/image/button/config/touche", "23.png");
+        copyFiletoExternalStorage(R.raw.conf_t_24, "data/image/button/config/touche", "24.png");
+        copyFiletoExternalStorage(R.raw.conf_t_25, "data/image/button/config/touche", "25.png");
+        copyFiletoExternalStorage(R.raw.conf_t_26, "data/image/button/config/touche", "26.png");
         copyFiletoExternalStorage(R.raw.conf_c_1, "data/image/button/config/categorie", "1.png");
         copyFiletoExternalStorage(R.raw.conf_c_2, "data/image/button/config/categorie", "2.png");
         copyFiletoExternalStorage(R.raw.conf_c_3, "data/image/button/config/categorie", "3.png");
         copyFiletoExternalStorage(R.raw.conf_c_4, "data/image/button/config/categorie", "4.png");
+        copyFiletoExternalStorage(R.raw.accueil_0, "data/image/button/accueil", "0.png");
+        copyFiletoExternalStorage(R.raw.accueil_1, "data/image/button/accueil", "1.png");
+        copyFiletoExternalStorage(R.raw.accueil_2, "data/image/button/accueil", "2.png");
+        copyFiletoExternalStorage(R.raw.accueil_3, "data/image/button/accueil", "3.png");
+        copyFiletoExternalStorage(R.raw.accueil_4, "data/image/button/accueil", "4.png");
     }
 
     // Load the .so

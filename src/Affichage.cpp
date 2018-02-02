@@ -186,7 +186,11 @@ void Affichage::update()
 			break;
 
 		case MODE_AFFICHAGE_CONFIG_TOUCHES_CATEGORIES:
-			this->menu->update(this->nbTicks());
+			this->menus[MENU_CONFIG_TOUCHES_CHOIX_TOUCHE]->update(this->nbTicks());
+			break;
+
+		case MODE_AFFICHAGE_ECRAN_ACCUEIL:
+			((MenuAngulaire*)this->menus[MENU_ECRAN_ACCUEIL])->update(this->nbTicks());
 			break;
 
 		default:
@@ -331,9 +335,11 @@ int Affichage::init() // TODO : Ajouter tous les éléments à charger + image d
 	}
 
 	// On crée les menus
-	this->menus = new Menu*[NB_MENUS];
+	this->menus = new Menu*[NB_MENUS+NB_MENUS_ANGULAIRES];
 	for(int i=0; i<NB_MENUS; i++)
 		this->menus[i] = new Menu(this->touchesJeu, this->renderer, this->policeMenu);
+	for(int i=NB_MENUS; i<NB_MENUS+NB_MENUS_ANGULAIRES; i++)
+		this->menus[i] = new MenuAngulaire(this->touchesJeu, this->renderer, this->policeMenu);
 
 	// On met une alerte si le nombre de bundle change (il faut recoder les touches en dur)
 	if(NB_BUNDLE != 4)
@@ -746,6 +752,61 @@ int Affichage::init() // TODO : Ajouter tous les éléments à charger + image d
 		}
 	}
 
+	// icônes menu principale
+	{
+		std::vector<Bouton*> bts;
+		bts.clear();
+
+		// Retour
+		std::string temp2 = this->path;
+		temp2 += BOUTON_CONFIG_DIRNAME;
+		temp2 += "touche/";
+		temp2 += Affichage::intToString(TOUCHE_NAVIGATION_RETOUR);
+		temp2 += ".";
+		temp2 += IMAGE_FORMAT;
+
+		SDL_Surface* fondC = IMG_Load(temp2.c_str());
+		if(fondC)
+		{
+			Bouton* b = new Bouton(fondC, this->renderer, TAILLE_ICONE_CONFIG_TOUCHE*this->tailleRef, "RETOUR", "Revient au menu précédent"); // TODO : Traduction (fichier externe)
+			this->lock.lock();
+			this->boutons.push_back(b);
+			this->lock.unlock();
+			bts.push_back(b);
+		}
+		else
+		{
+			error = 3;
+			SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,  "Impossible de charger l'image : %s\n", IMG_GetError());
+		}
+
+		// Boutons
+		for(int i=0; i<NB_ICONES_MENU_PRINCIPALE; i++)
+		{
+			std::string temp2 = this->path;
+			temp2 += BOUTON_ACCUEIL_DIRNAME;
+			temp2 += Affichage::intToString(i);
+			temp2 += ".";
+			temp2 += IMAGE_FORMAT;
+
+			SDL_Surface* fondC = IMG_Load(temp2.c_str());
+			if(fondC)
+			{
+				Bouton* b = new Bouton(fondC, this->renderer, TAILLE_ICONE_CONFIG_TOUCHE*this->tailleRef, this->titres_icones_menu_principale[i], this->description_icones_menu_principale[i]);
+				this->lock.lock();
+				this->boutons.push_back(b);
+				this->lock.unlock();
+				bts.push_back(b);
+			}
+			else
+			{
+				error = 3;
+				SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,  "Impossible de charger l'image : %s\n", IMG_GetError());
+			}
+		}
+		((MenuAngulaire*)this->menus[MENU_ECRAN_ACCUEIL])->ajoutCategorie(bts);
+	}
+
 	this->afficherEcranChargement(100, "Initialisation terminée");
 
 	return error;
@@ -787,39 +848,53 @@ void Affichage::setEcran(int ecran) // TODO : Gérer les transitions
 		ecran = this->ecran;
 	this->lock.lock();
 	unsigned int nbT = this->nbTicks();
+
+	// On ouvre le menu principale
+	if(this->ecran != MODE_AFFICHAGE_ECRAN_ACCUEIL && ecran == MODE_AFFICHAGE_ECRAN_ACCUEIL)
+	{
+		// On crée le menu des Touches
+		this->menus[MENU_ECRAN_ACCUEIL]->setTailleEcran(this->ancienneTailleX, this->ancienneTailleY);
+		this->menus[MENU_ECRAN_ACCUEIL]->setTailleAffichage(0, 0, TAILLE_ICONE_CONFIG_TOUCHE*this->tailleRef);
+		this->menus[MENU_ECRAN_ACCUEIL]->reset();
+		((MenuAngulaire*)this->menus[MENU_ECRAN_ACCUEIL])->update(0);
+	}
+	// On recharge la fenêtre du menu principale
+	if(this->ecran == MODE_AFFICHAGE_ECRAN_ACCUEIL && ecran == MODE_AFFICHAGE_ECRAN_ACCUEIL)
+	{
+		this->menus[MENU_ECRAN_ACCUEIL]->setTailleEcran(this->ancienneTailleX, this->ancienneTailleY);
+		this->menus[MENU_ECRAN_ACCUEIL]->setTailleAffichage(0, 0, TAILLE_ICONE_CONFIG_TOUCHE*this->tailleRef);
+	}
+
 	// On ouvre le menu de config touche - choix
 	if(this->ecran != MODE_AFFICHAGE_CONFIG_TOUCHES_CATEGORIES && ecran == MODE_AFFICHAGE_CONFIG_TOUCHES_CATEGORIES)
 	{
 		// On crée le menu des Touches
-		this->menu = menus[MENU_CONFIG_TOUCHES_CHOIX_TOUCHE];
 		// Le menu prend tout l'écran avec une marge de 10 pixels
-		this->menu->setTailleAffichage(this->ancienneTailleX-20, this->ancienneTailleY-20, TAILLE_ICONE_CONFIG_TOUCHE*this->tailleRef);
-		this->menu->setPositionAffichage(10, 10);
-		this->menu->setTailleEcran(this->ancienneTailleX, this->ancienneTailleY);
-		this->menu->reset();
-		this->menu->update(0);
-	}
-	// On ferme le menu de config touche - choix
-	if(this->ecran == MODE_AFFICHAGE_CONFIG_TOUCHES_CATEGORIES && ecran != MODE_AFFICHAGE_CONFIG_TOUCHES_CATEGORIES)
-	{
-		this->menu->update(-1); // TODO : gérer animations
+		this->menus[MENU_CONFIG_TOUCHES_CHOIX_TOUCHE]->setTailleAffichage(this->ancienneTailleX-20, this->ancienneTailleY-20, TAILLE_ICONE_CONFIG_TOUCHE*this->tailleRef);
+		this->menus[MENU_CONFIG_TOUCHES_CHOIX_TOUCHE]->setPositionAffichage(10, 10);
+		this->menus[MENU_CONFIG_TOUCHES_CHOIX_TOUCHE]->setTailleEcran(this->ancienneTailleX, this->ancienneTailleY);
+		this->menus[MENU_CONFIG_TOUCHES_CHOIX_TOUCHE]->reset();
+		this->menus[MENU_CONFIG_TOUCHES_CHOIX_TOUCHE]->update(0);
 	}
 	// On recharge la fenêtre du menu de config touche - choix
 	if(this->ecran == MODE_AFFICHAGE_CONFIG_TOUCHES_CATEGORIES && ecran == MODE_AFFICHAGE_CONFIG_TOUCHES_CATEGORIES)
 	{
-		this->menu->setTailleAffichage(this->ancienneTailleX-20, this->ancienneTailleY-20, TAILLE_ICONE_CONFIG_TOUCHE*this->tailleRef);
-		this->menu->setTailleEcran(this->ancienneTailleX, this->ancienneTailleY);
+		this->menus[MENU_CONFIG_TOUCHES_CHOIX_TOUCHE]->setTailleAffichage(this->ancienneTailleX-20, this->ancienneTailleY-20, TAILLE_ICONE_CONFIG_TOUCHE*this->tailleRef);
+		this->menus[MENU_CONFIG_TOUCHES_CHOIX_TOUCHE]->setTailleEcran(this->ancienneTailleX, this->ancienneTailleY);
 	}
 	this->ecran = ecran;
 	this->lock.unlock();
 }
 
-Menu* Affichage::getMenu()
+Menu* Affichage::getMenu(int menu)
 {
-	Menu* ret;
-	this->lock.lock();
-	ret = this->menu;
-	this->lock.unlock();
+	Menu* ret = nullptr;
+	if(menu>=0 && menu<NB_MENUS+NB_MENUS_ANGULAIRES)
+	{
+		this->lock.lock();
+		ret = this->menus[menu];
+		this->lock.unlock();
+	}
 	return ret;
 }
 

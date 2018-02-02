@@ -30,10 +30,12 @@ bool BundleTouche::nouvelEvenement(Touche* touche)
 		return false;
 	touche->activer();
 
+	int ret = 0;
+
 	// On fait passer la touche par toutes les touches composées
 	for(int i=0; i<tempL.size(); i++)
 		if(tempL[i]->composeT(touche))
-			tempL[i]->nouvelEvenement(touche);
+			ret += tempL[i]->nouvelEvenement(touche);
 
 	// Si la touche n'est pas inhibée
 	if(touche->actif())
@@ -47,20 +49,20 @@ bool BundleTouche::nouvelEvenement(Touche* touche)
 			touche->setValAxe(1);
 			for(int i=0; i<tempL.size(); i++)
 				if(!tempL[i]->composeT(touche))
-					tempL[i]->nouvelEvenement(touche);
+					ret += tempL[i]->nouvelEvenement(touche);
 			touche->setValAxe(0);
 		}
 		// Si la touche n'est pas inhibée, on la fait passer dans les autres touches
 		if(touche->actif())
 			for(int i=0; i<tempL.size(); i++)
 				if(!tempL[i]->composeT(touche))
-					tempL[i]->nouvelEvenement(touche);
+					ret += tempL[i]->nouvelEvenement(touche);
 	}
 
 	// On remet la molette à 0 si besoin
 	touche->getValAxe(false);
 	// On retourne true
-	return true;
+	return (ret>0);
 }
 
 /**

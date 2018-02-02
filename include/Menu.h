@@ -61,7 +61,7 @@ class Menu
 
 		int makeTextes();
 
-	private:
+	protected:
 		SDL_Renderer* renderer; // Renderer sur lequel dessiner
 		int positionX = 0; // position absolue du menu, en pixel
 		int positionY = 0; // position absolue du menu, en pixel

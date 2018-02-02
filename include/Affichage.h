@@ -6,6 +6,7 @@
 #include <Touche.h>
 #include <ToucheJeu.h>
 #include <Menu.h>
+#include <MenuAngulaire.h>
 #include <defs.h>
 #include <Config.h>
 
@@ -38,7 +39,7 @@ class Affichage
 		/**
 		 * Certains écrans créent un menu. Il est récupérable ici
 		 */
-		Menu* getMenu();
+		Menu* getMenu(int menu);
 		/**
 		 * Affiche un écran de chargement avec une barre de progression
 		 * Lorsqu'un pourcentage est spécifié, actualise les valeurs
@@ -100,7 +101,6 @@ class Affichage
 		std::mutex lock; // Mutex de gestion d'accès à l'objet
 		std::mutex lockAff; // Mutex de gestion d'accès à l'objet "modeAffichage"
 		std::mutex lockTick; // Mutex de gestion d'accès à l'objet "nbT"
-		Menu* menu = nullptr; // Menu actuellement affiché, si besoin
 		Menu** menus = nullptr; // Ensemble des menus possibles, ils seront créés à l'init
 		int ecran = 0; // Ecran actuel
 
@@ -108,6 +108,9 @@ class Affichage
 		int tailleRef = 1; // Indique la taille de référence pour l'affichage
 		int ancienneTailleX = 0; // Ancienne taille enregistrée pour la fenêtre
 		int ancienneTailleY = 0; // Ancienne taille enregistrée pour la fenêtre
+
+		std::string titres_icones_menu_principale[NB_ICONES_MENU_PRINCIPALE] = {"MAPPER LES BOUTONS","JOUER","CONFIGURATION","QUITTER"};
+		std::string description_icones_menu_principale[NB_ICONES_MENU_PRINCIPALE] = {"Configurer les différents boutons, les entrées utilisateur","Lancer une partie en ligne","Configurer les différents paramètres du jeu","Quitter le jeu"};
 };
 
 #endif // AFFICHAGE_H
